@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_workforce/pages/task-detail.dart';
+import 'package:mobile_workforce/pages/task_detail_page.dart';
 
 class TaskCard extends StatelessWidget {
   final title;

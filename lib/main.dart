@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
+import 'package:mobile_workforce/pages/login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(MainFrame());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  String token = pref.getString('tokenId');
+  runApp(MainFrame(
+    token: token,
+  ));
+}
 
 class MainFrame extends HookWidget {
+  final token;
+  MainFrame({this.token});
   @override
   Widget build(BuildContext context) {
     Map<int, Color> colorCodes = {
@@ -20,11 +31,10 @@ class MainFrame extends HookWidget {
       900: Color.fromRGBO(27, 71, 131, 1),
     };
     MaterialColor customColor = MaterialColor(0xFF1b4783, colorCodes);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: customColor),
-      home: HomePage(),
+      home: token == null ? LoginPage() : HomePage(),
     );
   }
 }

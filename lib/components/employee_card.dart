@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_workforce/components/action_button.dart';
-import 'package:mobile_workforce/pages/employee_detail.dart';
+import 'package:mobile_workforce/pages/employee_detail_page.dart';
 
 class EmployeeCard extends StatelessWidget {
   final name;
   final role;
-  EmployeeCard({Key key, this.name, this.role}) : super(key: key);
+  final ActionButton button;
+  EmployeeCard({Key key, this.name, this.role, this.button}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -17,7 +18,7 @@ class EmployeeCard extends StatelessWidget {
                   builder: (BuildContext context) => EmployeeDetailPage()));
         },
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 3),
+          padding: EdgeInsets.all(8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -38,10 +39,7 @@ class EmployeeCard extends StatelessWidget {
                   ),
                 ],
               ),
-              ActionButton(
-                icon: Icon(Icons.message),
-                onPressed: () {},
-              ),
+              if (button != null) button,
             ],
           ),
         ),

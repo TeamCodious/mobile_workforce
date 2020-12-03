@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mobile_workforce/components/action_button.dart';
+import 'package:mobile_workforce/pages/map_page.dart';
 import 'package:mobile_workforce/pages/messages_page.dart';
+import 'package:mobile_workforce/pages/settings_page.dart';
 import 'package:mobile_workforce/pages/tasks_page.dart';
 
 class HomePage extends HookWidget {
-  final _tabs = <String>['Tasks', 'Map', 'Messages', 'Reports', 'Settings'];
+  final _tabs = <String>['Tasks', 'Map', 'Messages', 'Reports', 'Employees'];
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +18,26 @@ class HomePage extends HookWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(_tabs[tabIndex.value]),
+        leading: Tooltip(
+          message: 'Profile',
+          child: ActionButton(
+            onPressed: () {},
+            icon: Icon(Icons.person),
+          ),
+        ),
         actions: [
           Tooltip(
-            message: 'Profile',
+            message: 'Settings',
             child: ActionButton(
-              onPressed: () {},
-              icon: Icon(Icons.person),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => SettingsPage()));
+              },
+              icon: Icon(Icons.settings),
             ),
-          )
+          ),
         ],
       ),
       bottomNavigationBar: Material(
@@ -56,25 +70,24 @@ class HomePage extends HookWidget {
             ),
             Tab(
               child: tabIndex.value == 4
-                  ? Icon(Icons.settings)
-                  : Icon(Icons.settings_outlined),
+                  ? Icon(Icons.people)
+                  : Icon(Icons.people_outline),
             ),
           ],
         ),
       ),
       body: TabBarView(
+        physics: NeverScrollableScrollPhysics(),
         controller: tabController,
         children: [
           TasksPage(),
-          Center(
-            child: const Text('Map'),
-          ),
+          MapPage(),
           MessagesPage(),
           Center(
             child: const Text('Notifications'),
           ),
           Center(
-            child: const Text('Setting'),
+            child: const Text('Employees'),
           ),
         ],
       ),

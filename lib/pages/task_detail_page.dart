@@ -1,12 +1,19 @@
+import 'dart:async';
+
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mobile_workforce/components/action_button.dart';
 import 'package:mobile_workforce/components/employee_card.dart';
 
 class TaskDetailPage extends HookWidget {
+  final mapController = Completer<GoogleMapController>();
+
   @override
   Widget build(BuildContext context) {
+    final coordinate = LatLng(16.8409, 96.1735);
+
     return Scaffold(
       bottomSheet: Container(
         margin: EdgeInsets.all(5),
@@ -105,10 +112,18 @@ class TaskDetailPage extends HookWidget {
                                     EmployeeCard(
                                       name: 'John',
                                       role: 'Manager',
+                                      button: ActionButton(
+                                        icon: Icon(Icons.message),
+                                        onPressed: () {},
+                                      ),
                                     ),
                                     EmployeeCard(
                                       name: 'Ben',
                                       role: 'Manager',
+                                      button: ActionButton(
+                                        icon: Icon(Icons.message),
+                                        onPressed: () {},
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -153,14 +168,26 @@ class TaskDetailPage extends HookWidget {
                                     EmployeeCard(
                                       name: 'Joe',
                                       role: 'Assignee',
+                                      button: ActionButton(
+                                        icon: Icon(Icons.message),
+                                        onPressed: () {},
+                                      ),
                                     ),
                                     EmployeeCard(
                                       name: 'Bob',
                                       role: 'Internship',
+                                      button: ActionButton(
+                                        icon: Icon(Icons.message),
+                                        onPressed: () {},
+                                      ),
                                     ),
                                     EmployeeCard(
                                       name: 'Jenny',
                                       role: 'Assignee',
+                                      button: ActionButton(
+                                        icon: Icon(Icons.message),
+                                        onPressed: () {},
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -309,11 +336,33 @@ class TaskDetailPage extends HookWidget {
                           ),
                         ),
                         Container(
-                          margin: EdgeInsets.only(bottom: 10),
-                          color: Colors.green,
-                          height: 200,
-                          child: Center(
-                            child: Text('Map'),
+                          height: 140,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          margin: EdgeInsets.all(10),
+                          child: GoogleMap(
+                            onMapCreated: (controller) =>
+                                mapController.complete(controller),
+                            mapType: MapType.normal,
+                            initialCameraPosition: CameraPosition(
+                              target: coordinate,
+                              zoom: 15,
+                            ),
+                            markers: List.of([
+                              Marker(
+                                markerId: MarkerId(
+                                  coordinate.toString(),
+                                ),
+                                position: coordinate,
+                              )
+                            ]).toSet(),
+                            scrollGesturesEnabled: false,
+                            zoomGesturesEnabled: false,
+                            rotateGesturesEnabled: false,
+                            tiltGesturesEnabled: false,
+                            zoomControlsEnabled: false,
                           ),
                         ),
                       ],
