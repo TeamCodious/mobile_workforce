@@ -18,11 +18,9 @@ class LoginPage extends HookWidget {
       String url = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/login/');
       Response response = await post(url, body: body);
-      print(response.statusCode);
       Map<String, dynamic> res = json.decode(response.body);
-      print(res);
       SharedPreferences pref = await SharedPreferences.getInstance();
-      pref.setString('tokenId', res['id']);
+      pref.setString('userId', res['id']);
       Navigator.push(context,
           MaterialPageRoute(builder: (BuildContext context) => HomePage()));
     }

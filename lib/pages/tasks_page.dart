@@ -1,18 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:http/http.dart';
 import 'package:mobile_workforce/components/tab_button.dart';
 import 'package:mobile_workforce/components/task_card.dart';
+import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/create_task_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TasksPage extends HookWidget {
-  final tasksPlanned = ['Task 1', 'Task 2', 'Task 3'];
-  final tasksDone = ['Task 4', 'Task 5'];
-  final tasksOngoing = ['Task 6', 'Task 7'];
-
   @override
   Widget build(BuildContext context) {
     final tabIndex = useState(1);
     final tabController = useTabController(initialLength: 3, initialIndex: 1);
+
+    final tasks = useState([]);
+
+    final plannedTasks =
+        tasks.value.where((t) => t.taskState == 'Planned').toList();
+    final ongoingTasks =
+        tasks.value.where((t) => t.taskState == 'Ongoing').toList();
+    final completedTasks =
+        tasks.value.where((t) => t.taskState == 'Completed').toList();
+
+    loadTasks() async {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      String userId = pref.getString('userId');
+
+      String url = Uri.encodeFull(
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/' +
+              userId +
+              '/tasks');
+      Response response = await get(url);
+      tasks.value = Task.fromJSONArray(response.body);
+    }
 
     useEffect(() {
       tabController.addListener(() {
@@ -21,10 +41,68 @@ class TasksPage extends HookWidget {
       return () {};
     });
 
+    useEffect(() {
+      loadTasks();
+      return () {};
+    }, []);
+
     Function scrollToTab(int i) {
       return () {
         tabController.animateTo(i);
       };
+    }
+
+    String calculateDuration(Task task) {
+      String duration;
+      if (task.taskState == 'Completed') {
+        final pTime = DateTime.now().millisecondsSinceEpoch - task.dueTime;
+        if (pTime >= 31556952000) {
+          duration =
+              'ended ' + (pTime ~/ 31556952000).toString() + ' years ago';
+        } else if (pTime >= 2592000000) {
+          duration =
+              'ended ' + (pTime ~/ 2592000000).toString() + ' months ago';
+        } else if (pTime >= 86400000) {
+          duration = 'ended ' + (pTime ~/ 86400000).toString() + ' days ago';
+        } else if (pTime >= 3600000) {
+          duration = 'ended ' + (pTime ~/ 3600000).toString() + ' hours ago';
+        } else if (pTime >= 3600000) {
+          duration = 'ended ' + (pTime ~/ 60000).toString() + ' min ago';
+        } else {
+          duration = 'ended just now';
+        }
+      } else if (task.taskState == 'Ongoing') {
+        final pTime = task.dueTime - DateTime.now().millisecondsSinceEpoch;
+        if (pTime >= 31556952000) {
+          duration = (pTime ~/ 31556952000).toString() + ' years remaining';
+        } else if (pTime >= 2592000000) {
+          duration = (pTime ~/ 2592000000).toString() + ' months remaining';
+        } else if (pTime >= 86400000) {
+          duration = (pTime ~/ 86400000).toString() + ' days remaining';
+        } else if (pTime >= 3600000) {
+          duration = (pTime ~/ 3600000).toString() + ' hours remaining';
+        } else if (pTime >= 3600000) {
+          duration = (pTime ~/ 60000).toString() + ' min remaining';
+        } else {
+          duration = 'a few seconds remaining';
+        }
+      } else if (task.taskState == 'Planned') {
+        final pTime = task.startTime - DateTime.now().millisecondsSinceEpoch;
+        if (pTime >= 31556952000) {
+          duration = 'begin in ' + (pTime ~/ 31556952000).toString() + ' years';
+        } else if (pTime >= 2592000000) {
+          duration = 'begin in ' + (pTime ~/ 2592000000).toString() + ' months';
+        } else if (pTime >= 86400000) {
+          duration = 'begin in ' + (pTime ~/ 86400000).toString() + ' days';
+        } else if (pTime >= 3600000) {
+          duration = 'begin in ' + (pTime ~/ 3600000).toString() + ' hours';
+        } else if (pTime >= 3600000) {
+          duration = 'begin in ' + (pTime ~/ 60000).toString() + ' min';
+        } else {
+          duration = 'begin in a few seconds';
+        }
+      }
+      return duration;
     }
 
     return Scaffold(
@@ -69,24 +147,51 @@ class TasksPage extends HookWidget {
             child: TabBarView(
               controller: tabController,
               children: [
-                ListView.builder(
-                  itemBuilder: (context, index) => TaskCard(
-                    title: tasksPlanned[index],
-                  ),
-                  itemCount: tasksPlanned.length,
-                ),
-                ListView.builder(
-                  itemBuilder: (context, index) => TaskCard(
-                    title: tasksOngoing[index],
-                  ),
-                  itemCount: tasksOngoing.length,
-                ),
-                ListView.builder(
-                  itemBuilder: (context, index) => TaskCard(
-                    title: tasksDone[index],
-                  ),
-                  itemCount: tasksDone.length,
-                ),
+                plannedTasks.length > 0
+                    ? ListView.builder(
+                        itemBuilder: (context, index) => TaskCard(
+                          title: plannedTasks[index].title,
+                          taskId: plannedTasks[index].id,
+                          duration: calculateDuration(plannedTasks[index]),
+                        ),
+                        itemCount: plannedTasks.length,
+                      )
+                    : Center(
+                        child: Text(
+                          'No tasks',
+                          style: TextStyle(fontSize: 15),
+                        ),
+                      ),
+                ongoingTasks.length > 0
+                    ? ListView.builder(
+                        itemBuilder: (context, index) => TaskCard(
+                          title: ongoingTasks[index].title,
+                          taskId: ongoingTasks[index].id,
+                          duration: calculateDuration(ongoingTasks[index]),
+                        ),
+                        itemCount: ongoingTasks.length,
+                      )
+                    : Center(
+                        child: Text(
+                          'No tasks',
+                          style: TextStyle(fontSize: 15),
+                        ),
+                      ),
+                completedTasks.length > 0
+                    ? ListView.builder(
+                        itemBuilder: (context, index) => TaskCard(
+                          title: completedTasks[index].title,
+                          taskId: completedTasks[index].id,
+                          duration: calculateDuration(completedTasks[index]),
+                        ),
+                        itemCount: completedTasks.length,
+                      )
+                    : Center(
+                        child: Text(
+                          'No tasks',
+                          style: TextStyle(fontSize: 15),
+                        ),
+                      ),
               ],
             ),
           ),

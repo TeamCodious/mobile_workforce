@@ -6,16 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences pref = await SharedPreferences.getInstance();
-  String token = pref.getString('tokenId');
-  runApp(MainFrame(
-    token: token,
-  ));
+  runApp(MainFrame());
 }
 
 class MainFrame extends HookWidget {
-  final token;
-  MainFrame({this.token});
+  Future<String> isLoggedIn() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    return pref.getString('userId') ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     Map<int, Color> colorCodes = {
@@ -31,10 +30,28 @@ class MainFrame extends HookWidget {
       900: Color.fromRGBO(27, 71, 131, 1),
     };
     MaterialColor customColor = MaterialColor(0xFF1b4783, colorCodes);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: customColor),
-      home: token == null ? LoginPage() : HomePage(),
+      home: FutureBuilder(
+        future: isLoggedIn(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else {
+            if (snapshot.data == '') {
+              return LoginPage();
+            } else {
+              return HomePage();
+            }
+          }
+        },
+      ),
     );
   }
 }

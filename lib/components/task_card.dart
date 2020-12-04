@@ -3,7 +3,9 @@ import 'package:mobile_workforce/pages/task_detail_page.dart';
 
 class TaskCard extends StatelessWidget {
   final title;
-  TaskCard({Key key, this.title}) : super(key: key);
+  final taskId;
+  final duration;
+  TaskCard({Key key, this.title, this.taskId, this.duration}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -12,7 +14,9 @@ class TaskCard extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (BuildContext context) => TaskDetailPage()));
+                  builder: (BuildContext context) => TaskDetailPage(
+                        taskId: taskId,
+                      )));
         },
         child: Container(
           padding: EdgeInsets.all(10),
@@ -32,7 +36,7 @@ class TaskCard extends StatelessWidget {
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10),
                 child: Text(
-                  '5 DEC 2020 23:55 PM',
+                  duration,
                 ),
               )
             ],

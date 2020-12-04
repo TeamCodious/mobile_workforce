@@ -9,7 +9,7 @@ class SettingsPage extends HookWidget {
   Widget build(BuildContext context) {
     logout() async {
       SharedPreferences pref = await SharedPreferences.getInstance();
-      pref.remove('tokenId');
+      pref.remove('userId');
       Navigator.push(context,
           MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
     }
