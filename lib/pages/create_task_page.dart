@@ -10,7 +10,7 @@ import 'package:mobile_workforce/components/employee_card.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/coordinate_picker.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_workforce/state.dart';
 
 class CreateTaskPage extends HookWidget {
   final mapController = Completer<GoogleMapController>();
@@ -27,24 +27,8 @@ class CreateTaskPage extends HookWidget {
     final coordinate = useState(LatLng(16.8409, 96.1735));
     final isSaving = useState(false);
 
-    String userId;
-
-    final adminIds = useState([userId]);
-    List<User> admins;
+    final adminIds = useState([CurrentUserId.id]);
     final assigneeIds = useState([]);
-
-    loadUserId() async {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-      userId = pref.getString('userId');
-    }
-
-    loadUser(String id) async {
-      String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/emplpyees/' +
-              id);
-      Response response = await get(url);
-      admins.add(User.fromJSON(response.body));
-    }
 
     Future<void> showDateTimePicker(ValueNotifier<DateTime> date) async {
       final selectedDate = await showDatePicker(
@@ -105,11 +89,6 @@ class CreateTaskPage extends HookWidget {
             MaterialPageRoute(builder: (BuildContext context) => HomePage()));
       }
     }
-
-    useEffect(() {
-      loadUserId();
-      return () {};
-    }, []);
 
     useEffect(() {
       startDateTimeInputController.text =
@@ -242,6 +221,12 @@ class CreateTaskPage extends HookWidget {
                         ActionButton(
                             icon: Icon(Icons.add),
                             onPressed: () {
+                              loadManagers() async {
+                                String url = Uri.encodeFull(
+                                    'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=managers');
+                                return get(url);
+                              }
+
                               showDialog(
                                   context: context,
                                   builder: (BuildContext context) =>
@@ -253,21 +238,56 @@ class CreateTaskPage extends HookWidget {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        content: SingleChildScrollView(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              EmployeeCard(
-                                                name: 'Ben',
-                                                role: 'Manager',
-                                                button: ActionButton(
-                                                  icon: Icon(Icons.add),
-                                                  onPressed: () {},
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                        content: FutureBuilder(
+                                            future: loadManagers(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot snapshot) {
+                                              if (snapshot.hasError) {
+                                                print(snapshot.error);
+                                                return Scaffold(
+                                                  body: Center(
+                                                    child: Text('Error'),
+                                                  ),
+                                                );
+                                              } else if (!snapshot.hasData) {
+                                                return Scaffold(
+                                                  body: Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                );
+                                              } else {
+                                                final List<User> users =
+                                                    User.fromJSONArray(
+                                                            snapshot.data.body)
+                                                        .where((u) => !adminIds
+                                                            .value
+                                                            .contains(u.id))
+                                                        .toList();
+                                                print(users[0].id);
+                                                print(adminIds.value);
+                                                return SingleChildScrollView(
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: users
+                                                        .map((u) =>
+                                                            EmployeeCard(
+                                                              name: u.username,
+                                                              role: u.role,
+                                                              button:
+                                                                  ActionButton(
+                                                                icon: Icon(
+                                                                    Icons.add),
+                                                                onPressed:
+                                                                    () {},
+                                                              ),
+                                                            ))
+                                                        .toList(),
+                                                  ),
+                                                );
+                                              }
+                                            }),
                                       ));
                             }),
                       ],

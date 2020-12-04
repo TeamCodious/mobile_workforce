@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:mobile_workforce/components/action_button.dart';
 import 'package:mobile_workforce/components/employee_card.dart';
 import 'package:mobile_workforce/models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_workforce/state.dart';
 
 class TaskDetailPage extends HookWidget {
   final taskId;
@@ -202,13 +202,7 @@ class TaskDetailPage extends HookWidget {
                                   showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
-                                        String currentuser;
                                         loadAdmins() async {
-                                          SharedPreferences pref =
-                                              await SharedPreferences
-                                                  .getInstance();
-                                          currentuser =
-                                              pref.getString('userId');
                                           String url = Uri.encodeFull(
                                               'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/' +
                                                   taskId +
@@ -256,13 +250,15 @@ class TaskDetailPage extends HookWidget {
                                                         .map(
                                                           (a) => EmployeeCard(
                                                             name: a.id ==
-                                                                    currentuser
+                                                                    CurrentUserId
+                                                                        .id
                                                                 ? a.username +
                                                                     ' (You)'
                                                                 : a.username,
                                                             role: a.role,
                                                             button: a.id ==
-                                                                    currentuser
+                                                                    CurrentUserId
+                                                                        .id
                                                                 ? null
                                                                 : ActionButton(
                                                                     icon: Icon(Icons
@@ -304,13 +300,7 @@ class TaskDetailPage extends HookWidget {
                                   showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
-                                        String currentuser;
                                         loadAssignees() async {
-                                          SharedPreferences pref =
-                                              await SharedPreferences
-                                                  .getInstance();
-                                          currentuser =
-                                              pref.getString('userId');
                                           String url = Uri.encodeFull(
                                               'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/' +
                                                   taskId +
@@ -358,13 +348,15 @@ class TaskDetailPage extends HookWidget {
                                                         .map(
                                                           (a) => EmployeeCard(
                                                             name: a.id ==
-                                                                    currentuser
+                                                                    CurrentUserId
+                                                                        .id
                                                                 ? a.username +
                                                                     ' (You)'
                                                                 : a.username,
                                                             role: a.role,
                                                             button: a.id ==
-                                                                    currentuser
+                                                                    CurrentUserId
+                                                                        .id
                                                                 ? null
                                                                 : ActionButton(
                                                                     icon: Icon(Icons

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
+import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends HookWidget {
@@ -19,8 +20,9 @@ class LoginPage extends HookWidget {
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/login/');
       Response response = await post(url, body: body);
       Map<String, dynamic> res = json.decode(response.body);
+      CurrentUserId.update(res['userId']);
       SharedPreferences pref = await SharedPreferences.getInstance();
-      pref.setString('userId', res['id']);
+      pref.setString('token', res['id']);
       Navigator.push(context,
           MaterialPageRoute(builder: (BuildContext context) => HomePage()));
     }

@@ -5,7 +5,7 @@ import 'package:mobile_workforce/components/tab_button.dart';
 import 'package:mobile_workforce/components/task_card.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/create_task_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_workforce/state.dart';
 
 class TasksPage extends HookWidget {
   @override
@@ -23,12 +23,9 @@ class TasksPage extends HookWidget {
         tasks.value.where((t) => t.taskState == 'Completed').toList();
 
     loadTasks() async {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-      String userId = pref.getString('userId');
-
       String url = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/' +
-              userId +
+              CurrentUserId.id +
               '/tasks');
       Response response = await get(url);
       tasks.value = Task.fromJSONArray(response.body);

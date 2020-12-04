@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:http/http.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
 import 'package:mobile_workforce/pages/login_page.dart';
+import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -12,7 +16,17 @@ void main() async {
 class MainFrame extends HookWidget {
   Future<String> isLoggedIn() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    return pref.getString('userId') ?? '';
+    String token = pref.getString('token') ?? '';
+    if (token != '') {
+      String url = Uri.encodeFull(
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/me/');
+      Map<String, String> headers = {'tokenKey': token};
+      Response response = await get(url, headers: headers);
+      Map<String, dynamic> data = jsonDecode(response.body);
+
+      CurrentUserId.update(data['id']);
+    }
+    return token;
   }
 
   @override
