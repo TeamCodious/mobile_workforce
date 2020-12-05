@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 class Task {
   String id;
   String title;
@@ -69,5 +68,39 @@ class User {
           ..role = u['employee_role']
           ..phoneNumber = u['phone_no'])
         .toList();
+  }
+}
+
+class LocationBackUp {
+  String id;
+  double latitude;
+  double longitude;
+  int time;
+  LocationBackUp({this.id, this.latitude, this.longitude, this.time});
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'latitude': latitude,
+      'longitude': longitude,
+      'time': time,
+    };
+  }
+}
+
+class Location {
+  String id;
+  double latitude;
+  double longitude;
+  int time;
+  String employee;
+  Location({this.id, this.latitude, this.longitude, this.time, this.employee});
+  static Location fromJSON(String jsonString) {
+    final Map<String, dynamic> data = jsonDecode(jsonString);
+    return Location()
+      ..id = data['id']
+      ..latitude = data['latitude']
+      ..longitude = data['longitude']
+      ..time = data['time']
+      ..employee = data['employee'];
   }
 }
