@@ -23,7 +23,9 @@ class HomePage extends HookWidget {
     final tabController = useTabController(initialLength: 5);
 
     useEffect(() {
-      startTracking();
+      // WARNING:
+      // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app.
+      // startTracking();
       return () {};
     }, []);
 
@@ -49,29 +51,6 @@ class HomePage extends HookWidget {
                         builder: (BuildContext context) => SettingsPage()));
               },
               icon: Icon(Icons.settings),
-            ),
-          ),
-          Tooltip( //For debug
-            message: 'See backups',
-            child: ActionButton(
-              onPressed: () async {
-                final locations = await SQLite.locations();
-                print(locations.length);
-                locations.forEach((element) {
-                  print('${element.id} ${element.latitude} ${element.longitude} ${DateTime.fromMillisecondsSinceEpoch(element.time)} ${element.time}');
-                });
-              },
-              icon: Icon(Icons.list),
-            ),
-          ),
-
-          Tooltip( //For debug
-            message: 'See backups',
-            child: ActionButton(
-              onPressed: () async {
-                await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
-              },
-              icon: Icon(Icons.stop),
             ),
           )
         ],

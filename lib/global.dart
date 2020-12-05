@@ -36,7 +36,7 @@ class SQLite {
   }
   static Future<void> insertPosition(Position position) async {
     final uuid = Uuid();
-    final Location_BackUp location = Location_BackUp(id: uuid.v4(), latitude: position.latitude, longitude: position.longitude, time: DateTime.now().toUtc().millisecondsSinceEpoch);
+    final LocationBackUp location = LocationBackUp(id: uuid.v4(), latitude: position.latitude, longitude: position.longitude, time: DateTime.now().toUtc().millisecondsSinceEpoch);
     final Database db = await setUpDB();
     await db.insert(
       'locations',
@@ -46,11 +46,11 @@ class SQLite {
     final los = await locations();
     print(los.length);
   }
-  static Future<List<Location_BackUp>> locations() async {
+  static Future<List<LocationBackUp>> locations() async {
     final Database db = await setUpDB();
     final List<Map<String, dynamic>> maps = await db.query('locations');
     return List.generate(maps.length, (i) {
-      return Location_BackUp(
+      return LocationBackUp(
         id: maps[i]['id'],
         latitude: maps[i]['latitude'],
         longitude: maps[i]['longitude'],

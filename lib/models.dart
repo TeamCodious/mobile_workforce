@@ -71,12 +71,12 @@ class User {
   }
 }
 
-class Location_BackUp {
+class LocationBackUp {
   String id;
   double latitude;
   double longitude;
   int time;
-  Location_BackUp({this.id, this.latitude, this.longitude, this.time});
+  LocationBackUp({this.id, this.latitude, this.longitude, this.time});
   Map<String, dynamic> toMap() {
     return {
       'id': id,
