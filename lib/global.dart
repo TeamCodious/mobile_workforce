@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 class Global {
   static const BACKGROUND_TASK_ID = 2000;
+  static const USER_ID_KEY = "com.example.userID";
 }
 
 Future<bool> isInternet() async {
@@ -65,4 +66,14 @@ class SQLite {
     final Database db = await setUpDB();
     await db.delete("locations");
   }
+
+  static Future<void> deleteLocation(String id) async {
+    final db = await setUpDB();
+    await db.delete(
+      'locations',
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
+
 }

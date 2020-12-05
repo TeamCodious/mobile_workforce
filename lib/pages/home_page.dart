@@ -10,6 +10,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import '../global.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart';
+import '../state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends HookWidget {
   final _tabs = <String>['Tasks', 'Map', 'Messages', 'Reports', 'Employees'];
@@ -55,7 +58,7 @@ class HomePage extends HookWidget {
                 final locations = await SQLite.locations();
                 print(locations.length);
                 locations.forEach((element) {
-                  print('${element.id} ${element.latitude} ${element.longitude} ${DateTime.fromMillisecondsSinceEpoch(element.time)}');
+                  print('${element.id} ${element.latitude} ${element.longitude} ${DateTime.fromMillisecondsSinceEpoch(element.time)} ${element.time}');
                 });
               },
               icon: Icon(Icons.list),
@@ -66,7 +69,7 @@ class HomePage extends HookWidget {
             message: 'See backups',
             child: ActionButton(
               onPressed: () async {
-                AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
+                await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
               },
               icon: Icon(Icons.stop),
             ),
@@ -136,14 +139,14 @@ class HomePage extends HookWidget {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     bool result = await isInternet();
     print(position);
+    // WARNING:
+    // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app. 
     if(result == true) {
-      // create location at server!
-      print('YAY! Fire!');
+      // await save(position);
     } else {
-      await SQLite.insertPosition(position);
+      // await SQLite.insertPosition(position);
     }
-
-    //For debugging
+    //debug
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     var initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
     var initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
@@ -153,8 +156,31 @@ class HomePage extends HookWidget {
         'location_update', 'Location Updates', 'You will receive location updates here',
         importance: Importance.max, priority: Priority.high);
     var platformChannelSpecifics = new NotificationDetails(android: androidPlatformChannelSpecifics);
-    DateTime dateTime = new DateTime.now();
-    await flutterLocalNotificationsPlugin.show(
-        0, 'New Location Received !', "${dateTime.toString()} ${position.longitude} ${position.latitude}", platformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, 'PUT success $result', "${position.longitude} ${position.latitude}", platformChannelSpecifics);
+  }
+
+  static Future<void> save(Position position) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String userID = pref.getString(Global.USER_ID_KEY) ?? '';
+    if (userID == '') {
+      await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
+      return;
+    }
+    String url = Uri.encodeFull(
+        'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/locations/new');
+
+    String body =
+        '{"time": ${DateTime.now().toUtc().millisecondsSinceEpoch}, "latitude": ${position.latitude}, "longitude": ${position.longitude}, "employee": "$userID"}';
+        print(body);
+        print(CurrentUserId.id);
+    try {
+      Response response = await put(url, body: body);
+      if (response.statusCode != 201) {
+        throw "Error: $response";
+      }
+    } catch (err) {
+      print(err);
+      await SQLite.insertPosition(position);
+    }
   }
 }

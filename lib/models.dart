@@ -87,8 +87,20 @@ class Location_BackUp {
   }
 }
 
-class Login {
-  String token;
-  bool online;
-  
+class Location {
+  String id;
+  double latitude;
+  double longitude;
+  int time;
+  String employee;
+  Location({this.id, this.latitude, this.longitude, this.time, this.employee});
+  static Location fromJSON(String jsonString) {
+    final Map<String, dynamic> data = jsonDecode(jsonString);
+    return Location()
+      ..id = data['id']
+      ..latitude = data['latitude']
+      ..longitude = data['longitude']
+      ..time = data['time']
+      ..employee = data['employee'];
+  }
 }

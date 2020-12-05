@@ -12,7 +12,6 @@ import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:location_permissions/location_permissions.dart';
-import 'package:connectivity/connectivity.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +29,6 @@ class MainFrame extends HookWidget {
       Map<String, String> headers = {'tokenKey': token};
       Response response = await get(url, headers: headers);
       Map<String, dynamic> data = jsonDecode(response.body);
-
       CurrentUserId.update(data['id']);
     }
     return token;
@@ -63,10 +61,29 @@ class MainFrame extends HookWidget {
       }
     }
     Future<void> uploadBackups() async {
-      final locations = SQLite.locations();
-      // try catch
-      // send all backups to server, uploading fails, don't delete.
-      SQLite.deleteBackups();
+      final locations = await SQLite.locations();
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      String userID = pref.getString(Global.USER_ID_KEY) ?? '';
+      if (userID == "") return;
+
+      for (var location in locations) {
+        String url = Uri.encodeFull(
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/locations/new');
+        String body =
+          '{"time": ${location.time}, "latitude": ${location.latitude}, "longitude": ${location.longitude}, "employee": "$userID"}';
+        try {
+          Response response = await put(url, body: body);
+          if (response.statusCode == 201) {
+            await SQLite.deleteLocation(location.id);
+            print(body);
+          } else {
+            throw "Error: $response";
+          }
+        } catch (err) {
+          print(err);
+        }
+      }
+      print("Length: ${locations.length}");
     }
     useEffect(() {
       check();
@@ -75,20 +92,23 @@ class MainFrame extends HookWidget {
     useEffect(() {
       subscription = Connectivity().onConnectivityChanged.listen((event) async {
         if (event == ConnectivityResult.none) {
+          print('Offline');
           isOnline.value = false;
         } else if (event == ConnectivityResult.mobile || event == ConnectivityResult.wifi) {
+          print('Online');
           if (!isOnline.value) {
+            isOnline.value = true;
             hasBackups.value = await SQLite.hasBackUps();
             await uploadBackups();
             hasBackups.value = false;
           }
-          isOnline.value = true;
         } else {
+          print('Offline');
           isOnline.value = false;
         }
       });
       return () {};
-    }, []);
+    });
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -100,7 +120,7 @@ class MainFrame extends HookWidget {
             if (hasBackups.value) {
 
               return Scaffold(
-                body: Center(child: Text("Has backups."),),
+                body: Center(child: Text("Uploading your backups."),),
               );
             }
             if (snapshot.hasError || !snapshot.hasData) {
