@@ -45,6 +45,8 @@ class User {
   String email;
   String role;
   String phoneNumber;
+  double latitude;
+  double longitude;
 
   static User fromJSON(String jsonString) {
     final Map<String, dynamic> data = jsonDecode(jsonString);
@@ -54,7 +56,9 @@ class User {
       ..fullname = data['full_name']
       ..email = data['email']
       ..role = data['employee_role']
-      ..phoneNumber = data['phone_no'];
+      ..phoneNumber = data['phone_no']
+      ..latitude = data['latitude'] ?? null
+      ..longitude = data['longitude'] ?? null;
   }
 
   static List<User> fromJSONArray(String jsonString) {
@@ -66,7 +70,9 @@ class User {
           ..fullname = u['full_name']
           ..email = u['email']
           ..role = u['employee_role']
-          ..phoneNumber = u['phone_no'])
+          ..phoneNumber = u['phone_no']
+          ..latitude = u['latitude'] ?? null
+          ..longitude = u['longitude'] ?? null)
         .toList();
   }
 }
