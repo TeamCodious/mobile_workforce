@@ -28,6 +28,8 @@ class CreateTaskPage extends HookWidget {
     final isSaving = useState(false);
 
     final adminIds = useState([CurrentUserId.id]);
+    final adminRefresh = useState(false);
+    final assigneeRefresh = useState(false);
     final assigneeIds = useState([]);
 
     Future<void> showDateTimePicker(ValueNotifier<DateTime> date) async {
@@ -77,17 +79,39 @@ class CreateTaskPage extends HookWidget {
           descriptionController.text.isNotEmpty;
     }
 
+    List<String> formattedAdminString =
+        adminIds.value.map((e) => '"' + e + '"').toList();
+
+    List<String> formattedAssigneeString =
+        assigneeIds.value.map((e) => '"' + e + '"').toList();
+
     _save() async {
       String url = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/new');
 
       String body =
-          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": [], "owners": [], "tesk_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}}';
+          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": ${formattedAssigneeString.toString()}, "owners": ${formattedAdminString.toString()}, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}}';
       Response response = await put(url, body: body);
       if (response.statusCode == 201) {
         Navigator.push(context,
             MaterialPageRoute(builder: (BuildContext context) => HomePage()));
       }
+    }
+
+    loadAddedAdmins() async {
+      String url = Uri.encodeFull(
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees');
+
+      String body = '{"employees": ${formattedAdminString.toString()}}';
+      return post(url, body: body);
+    }
+
+    loadAddedAssignees() async {
+      String url = Uri.encodeFull(
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees');
+
+      String body = '{"employees": ${formattedAssigneeString.toString()}}';
+      return post(url, body: body);
     }
 
     useEffect(() {
@@ -229,72 +253,157 @@ class CreateTaskPage extends HookWidget {
 
                               showDialog(
                                   context: context,
-                                  builder: (BuildContext context) =>
-                                      AlertDialog(
-                                        title: Text(
-                                          'Add admins',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        content: FutureBuilder(
-                                            future: loadManagers(),
-                                            builder: (BuildContext context,
-                                                AsyncSnapshot snapshot) {
-                                              if (snapshot.hasError) {
-                                                print(snapshot.error);
-                                                return Scaffold(
-                                                  body: Center(
-                                                    child: Text('Error'),
-                                                  ),
-                                                );
-                                              } else if (!snapshot.hasData) {
-                                                return Scaffold(
-                                                  body: Center(
-                                                    child:
-                                                        CircularProgressIndicator(),
-                                                  ),
-                                                );
-                                              } else {
-                                                final List<User> users =
-                                                    User.fromJSONArray(
-                                                            snapshot.data.body)
-                                                        .where((u) => !adminIds
-                                                            .value
-                                                            .contains(u.id))
-                                                        .toList();
-                                                print(users[0].id);
-                                                print(adminIds.value);
-                                                return SingleChildScrollView(
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: users
-                                                        .map((u) =>
-                                                            EmployeeCard(
-                                                              name: u.username,
-                                                              role: u.role,
-                                                              button:
-                                                                  ActionButton(
-                                                                icon: Icon(
-                                                                    Icons.add),
-                                                                onPressed:
-                                                                    () {},
+                                  builder:
+                                      (BuildContext context) => AlertDialog(
+                                            title: Text(
+                                              'Add admins',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            content: StatefulBuilder(
+                                              builder: (context, setState) =>
+                                                  FutureBuilder(
+                                                      future: loadManagers(),
+                                                      builder:
+                                                          (BuildContext context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                        if (snapshot.hasError) {
+                                                          print(snapshot.error);
+                                                          return Scaffold(
+                                                            body: Center(
+                                                              child:
+                                                                  Text('Error'),
+                                                            ),
+                                                          );
+                                                        } else if (!snapshot
+                                                            .hasData) {
+                                                          return Scaffold(
+                                                            body: Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                          );
+                                                        } else {
+                                                          final List<
+                                                              User> users = User
+                                                                  .fromJSONArray(
+                                                                      snapshot
+                                                                          .data
+                                                                          .body)
+                                                              .where((u) =>
+                                                                  !adminIds
+                                                                      .value
+                                                                      .contains(
+                                                                          u.id))
+                                                              .toList();
+                                                          if (users.length >
+                                                              0) {
+                                                            return Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: users
+                                                                  .map((u) =>
+                                                                      EmployeeCard(
+                                                                        name: u
+                                                                            .username,
+                                                                        role: u
+                                                                            .role,
+                                                                        button:
+                                                                            ActionButton(
+                                                                          icon:
+                                                                              Icon(Icons.add),
+                                                                          onPressed:
+                                                                              () {
+                                                                            adminIds.value.add(u.id);
+                                                                            setState(() {
+                                                                              users.remove(users.where((uu) => u.id == uu.id));
+                                                                            });
+                                                                            adminRefresh.value =
+                                                                                true;
+                                                                          },
+                                                                        ),
+                                                                      ))
+                                                                  .toList(),
+                                                            );
+                                                          } else {
+                                                            return Container(
+                                                              child: Text(
+                                                                'No more managers',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        15),
                                                               ),
-                                                            ))
-                                                        .toList(),
-                                                  ),
-                                                );
-                                              }
-                                            }),
-                                      ));
+                                                            );
+                                                          }
+                                                        }
+                                                      }),
+                                            ),
+                                          ));
                             }),
                       ],
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [],
+                    StatefulBuilder(
+                      builder: (context, setState) => FutureBuilder(
+                          future: loadAddedAdmins(),
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (adminRefresh.value) {
+                                setState(() {
+                                  adminRefresh.value = false;
+                                });
+                              }
+                            });
+
+                            if (snapshot.hasError) {
+                              print(snapshot.error);
+                              return Scaffold(
+                                body: Center(
+                                  child: Text('Error'),
+                                ),
+                              );
+                            } else if (!snapshot.hasData) {
+                              return Scaffold(
+                                body: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            } else {
+                              List<User> admins =
+                                  User.fromJSONArray(snapshot.data.body);
+
+                              return Column(
+                                children: admins
+                                    .map((a) => EmployeeCard(
+                                          name: a.id == CurrentUserId.id
+                                              ? a.username + ' (You)'
+                                              : a.username,
+                                          role: a.role,
+                                          button: a.id == CurrentUserId.id
+                                              ? null
+                                              : ActionButton(
+                                                  icon: Icon(Icons.remove),
+                                                  onPressed: () {
+                                                    adminIds.value.remove(a.id);
+                                                    setState(() {
+                                                      admins.remove(
+                                                          admins.where((aa) =>
+                                                              aa.id == a.id));
+                                                    });
+                                                  },
+                                                ),
+                                        ))
+                                    .toList(),
+                              );
+                            }
+                          }),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -309,56 +418,161 @@ class CreateTaskPage extends HookWidget {
                         ActionButton(
                             icon: Icon(Icons.add),
                             onPressed: () {
+                              loadAssignees() async {
+                                String url = Uri.encodeFull(
+                                    'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=employees');
+                                return get(url);
+                              }
+
                               showDialog(
                                   context: context,
-                                  builder: (BuildContext context) =>
-                                      AlertDialog(
-                                        title: Text(
-                                          'Add assignees',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        content: SingleChildScrollView(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              EmployeeCard(
-                                                name: 'Joe',
-                                                role: 'Assignee',
-                                                button: ActionButton(
-                                                  icon: Icon(Icons.add),
-                                                  onPressed: () {},
-                                                ),
+                                  builder:
+                                      (BuildContext context) => AlertDialog(
+                                            title: Text(
+                                              'Add assignees',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                              EmployeeCard(
-                                                name: 'Bob',
-                                                role: 'Internship',
-                                                button: ActionButton(
-                                                  icon: Icon(Icons.add),
-                                                  onPressed: () {},
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ));
+                                            ),
+                                            content: StatefulBuilder(
+                                              builder: (context, setState) =>
+                                                  FutureBuilder(
+                                                      future: loadAssignees(),
+                                                      builder:
+                                                          (BuildContext context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                        if (snapshot.hasError) {
+                                                          print(snapshot.error);
+                                                          return Scaffold(
+                                                            body: Center(
+                                                              child:
+                                                                  Text('Error'),
+                                                            ),
+                                                          );
+                                                        } else if (!snapshot
+                                                            .hasData) {
+                                                          return Scaffold(
+                                                            body: Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                          );
+                                                        } else {
+                                                          final List<
+                                                              User> users = User
+                                                                  .fromJSONArray(
+                                                                      snapshot
+                                                                          .data
+                                                                          .body)
+                                                              .where((u) =>
+                                                                  !assigneeIds
+                                                                      .value
+                                                                      .contains(
+                                                                          u.id))
+                                                              .toList();
+                                                          if (users.length >
+                                                              0) {
+                                                            return Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: users
+                                                                  .map((u) =>
+                                                                      EmployeeCard(
+                                                                        name: u
+                                                                            .username,
+                                                                        role: u
+                                                                            .role,
+                                                                        button:
+                                                                            ActionButton(
+                                                                          icon:
+                                                                              Icon(Icons.add),
+                                                                          onPressed:
+                                                                              () {
+                                                                            assigneeIds.value.add(u.id);
+                                                                            setState(() {
+                                                                              users.remove(users.where((uu) => u.id == uu.id));
+                                                                            });
+                                                                            assigneeRefresh.value =
+                                                                                true;
+                                                                          },
+                                                                        ),
+                                                                      ))
+                                                                  .toList(),
+                                                            );
+                                                          } else {
+                                                            return Container(
+                                                              child: Text(
+                                                                'No more employees',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        15),
+                                                              ),
+                                                            );
+                                                          }
+                                                        }
+                                                      }),
+                                            ),
+                                          ));
                             }),
                       ],
                     ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        EmployeeCard(
-                          name: 'Jenny',
-                          role: 'Assignee',
-                          button: ActionButton(
-                            icon: Icon(Icons.remove),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
+                    StatefulBuilder(
+                      builder: (context, setState) => FutureBuilder(
+                          future: loadAddedAssignees(),
+                          builder:
+                              (BuildContext context, AsyncSnapshot snapshot) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (assigneeRefresh.value) {
+                                setState(() {
+                                  assigneeRefresh.value = false;
+                                });
+                              }
+                            });
+
+                            if (snapshot.hasError) {
+                              print(snapshot.error);
+                              return Scaffold(
+                                body: Center(
+                                  child: Text('Error'),
+                                ),
+                              );
+                            } else if (!snapshot.hasData) {
+                              return Scaffold(
+                                body: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            } else {
+                              List<User> assignees =
+                                  User.fromJSONArray(snapshot.data.body);
+
+                              return Column(
+                                children: assignees
+                                    .map((a) => EmployeeCard(
+                                          name: a.username,
+                                          role: a.role,
+                                          button: ActionButton(
+                                            icon: Icon(Icons.remove),
+                                            onPressed: () {
+                                              assigneeIds.value.remove(a.id);
+                                              setState(() {
+                                                assignees.remove(
+                                                    assignees.where(
+                                                        (aa) => aa.id == a.id));
+                                              });
+                                            },
+                                          ),
+                                        ))
+                                    .toList(),
+                              );
+                            }
+                          }),
                     ),
                   ],
                 ),
