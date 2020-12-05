@@ -29,7 +29,7 @@ class MainFrame extends HookWidget {
       Map<String, String> headers = {'tokenKey': token};
       Response response = await get(url, headers: headers);
       Map<String, dynamic> data = jsonDecode(response.body);
-      CurrentUserId.update(data['id']);
+      CurrentUserId.update(data['id'], data['employee_role']);
     }
     return token;
   }

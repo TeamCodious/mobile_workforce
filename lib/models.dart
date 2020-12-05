@@ -8,6 +8,8 @@ class Task {
   String taskState;
   List<dynamic> adminIds;
   List<dynamic> assigneeIds;
+  double latitude;
+  double longitude;
 
   static Task fromJSON(String jsonString) {
     final Map<String, dynamic> data = jsonDecode(jsonString);
@@ -19,7 +21,9 @@ class Task {
       ..dueTime = data['due_time']
       ..taskState = data['task_state']
       ..adminIds = data['owners']
-      ..assigneeIds = data['assignees'];
+      ..assigneeIds = data['assignees']
+      ..latitude = data['latitude']
+      ..longitude = data['longitude'];
   }
 
   static List<Task> fromJSONArray(String jsonString) {
@@ -33,7 +37,9 @@ class Task {
           ..dueTime = t['due_time']
           ..taskState = t['task_state']
           ..adminIds = t['owners']
-          ..assigneeIds = t['assignees'])
+          ..assigneeIds = t['assignees']
+          ..latitude = t['latitude']
+          ..longitude = t['longitude'])
         .toList();
   }
 }

@@ -17,7 +17,7 @@ class TasksPage extends HookWidget {
       String url = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/' +
               CurrentUserId.id +
-              '/tasks');
+              '/tasks?type=all');
       Response response = await get(url);
       return Task.fromJSONArray(response.body);
     }

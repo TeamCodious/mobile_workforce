@@ -528,15 +528,15 @@ class TaskDetailPage extends HookWidget {
                                         mapController.complete(controller),
                                     mapType: MapType.normal,
                                     initialCameraPosition: CameraPosition(
-                                      target: coordinate,
+                                      target: LatLng(task.latitude, task.longitude),
                                       zoom: 15,
                                     ),
                                     markers: List.of([
                                       Marker(
                                         markerId: MarkerId(
-                                          coordinate.toString(),
+                                          task.id,
                                         ),
-                                        position: coordinate,
+                                        position: LatLng(task.latitude, task.longitude),
                                       )
                                     ]).toSet(),
                                     scrollGesturesEnabled: false,
