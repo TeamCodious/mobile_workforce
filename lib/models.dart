@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 class Task {
   String id;
   String title;
@@ -70,4 +69,26 @@ class User {
           ..phoneNumber = u['phone_no'])
         .toList();
   }
+}
+
+class Location_BackUp {
+  String id;
+  double latitude;
+  double longitude;
+  int time;
+  Location_BackUp({this.id, this.latitude, this.longitude, this.time});
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'latitude': latitude,
+      'longitude': longitude,
+      'time': time,
+    };
+  }
+}
+
+class Login {
+  String token;
+  bool online;
+  
 }
