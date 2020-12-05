@@ -382,18 +382,23 @@ class CreateTaskPage extends HookWidget {
                               return Column(
                                 children: admins
                                     .map((a) => EmployeeCard(
-                                          name: a.username,
+                                          name: a.id == CurrentUserId.id
+                                              ? a.username + ' (You)'
+                                              : a.username,
                                           role: a.role,
-                                          button: ActionButton(
-                                            icon: Icon(Icons.remove),
-                                            onPressed: () {
-                                              adminIds.value.remove(a.id);
-                                              setState(() {
-                                                admins.remove(admins.where(
-                                                    (aa) => aa.id == a.id));
-                                              });
-                                            },
-                                          ),
+                                          button: a.id == CurrentUserId.id
+                                              ? null
+                                              : ActionButton(
+                                                  icon: Icon(Icons.remove),
+                                                  onPressed: () {
+                                                    adminIds.value.remove(a.id);
+                                                    setState(() {
+                                                      admins.remove(
+                                                          admins.where((aa) =>
+                                                              aa.id == a.id));
+                                                    });
+                                                  },
+                                                ),
                                         ))
                                     .toList(),
                               );

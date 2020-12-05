@@ -13,22 +13,13 @@ class TasksPage extends HookWidget {
     final tabIndex = useState(1);
     final tabController = useTabController(initialLength: 3, initialIndex: 1);
 
-    final tasks = useState([]);
-
-    final plannedTasks =
-        tasks.value.where((t) => t.taskState == 'Planned').toList();
-    final ongoingTasks =
-        tasks.value.where((t) => t.taskState == 'Ongoing').toList();
-    final completedTasks =
-        tasks.value.where((t) => t.taskState == 'Completed').toList();
-
     loadTasks() async {
       String url = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/' +
               CurrentUserId.id +
               '/tasks');
       Response response = await get(url);
-      tasks.value = Task.fromJSONArray(response.body);
+      return Task.fromJSONArray(response.body);
     }
 
     useEffect(() {
@@ -37,11 +28,6 @@ class TasksPage extends HookWidget {
       });
       return () {};
     });
-
-    useEffect(() {
-      loadTasks();
-      return () {};
-    }, []);
 
     Function scrollToTab(int i) {
       return () {
@@ -118,81 +104,110 @@ class TasksPage extends HookWidget {
           },
         ),
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              TabButton(
-                text: 'Planned',
-                onPressed: scrollToTab(0),
-                isSelected: tabController.index == 0,
+      body: FutureBuilder(
+        future: loadTasks(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return Scaffold(
+              body: Center(
+                child: Text('Error'),
               ),
-              TabButton(
-                text: 'Ongoing',
-                onPressed: scrollToTab(1),
-                isSelected: tabController.index == 1,
+            );
+          } else if (!snapshot.hasData) {
+            return Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
               ),
-              TabButton(
-                text: 'Completed',
-                onPressed: scrollToTab(2),
-                isSelected: tabController.index == 2,
-              ),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: tabController,
+            );
+          } else {
+            final plannedTasks =
+                snapshot.data.where((t) => t.taskState == 'Planned').toList();
+            final ongoingTasks =
+                snapshot.data.where((t) => t.taskState == 'Ongoing').toList();
+            final completedTasks =
+                snapshot.data.where((t) => t.taskState == 'Completed').toList();
+            return Column(
               children: [
-                plannedTasks.length > 0
-                    ? ListView.builder(
-                        itemBuilder: (context, index) => TaskCard(
-                          title: plannedTasks[index].title,
-                          taskId: plannedTasks[index].id,
-                          duration: calculateDuration(plannedTasks[index]),
-                        ),
-                        itemCount: plannedTasks.length,
-                      )
-                    : Center(
-                        child: Text(
-                          'No tasks',
-                          style: TextStyle(fontSize: 15),
-                        ),
-                      ),
-                ongoingTasks.length > 0
-                    ? ListView.builder(
-                        itemBuilder: (context, index) => TaskCard(
-                          title: ongoingTasks[index].title,
-                          taskId: ongoingTasks[index].id,
-                          duration: calculateDuration(ongoingTasks[index]),
-                        ),
-                        itemCount: ongoingTasks.length,
-                      )
-                    : Center(
-                        child: Text(
-                          'No tasks',
-                          style: TextStyle(fontSize: 15),
-                        ),
-                      ),
-                completedTasks.length > 0
-                    ? ListView.builder(
-                        itemBuilder: (context, index) => TaskCard(
-                          title: completedTasks[index].title,
-                          taskId: completedTasks[index].id,
-                          duration: calculateDuration(completedTasks[index]),
-                        ),
-                        itemCount: completedTasks.length,
-                      )
-                    : Center(
-                        child: Text(
-                          'No tasks',
-                          style: TextStyle(fontSize: 15),
-                        ),
-                      ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TabButton(
+                      text: 'Planned',
+                      onPressed: scrollToTab(0),
+                      isSelected: tabController.index == 0,
+                    ),
+                    TabButton(
+                      text: 'Ongoing',
+                      onPressed: scrollToTab(1),
+                      isSelected: tabController.index == 1,
+                    ),
+                    TabButton(
+                      text: 'Completed',
+                      onPressed: scrollToTab(2),
+                      isSelected: tabController.index == 2,
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: tabController,
+                    children: [
+                      plannedTasks.length > 0
+                          ? ListView.builder(
+                              itemBuilder: (context, index) => TaskCard(
+                                title: plannedTasks[index].title,
+                                taskId: plannedTasks[index].id,
+                                duration:
+                                    calculateDuration(plannedTasks[index]),
+                              ),
+                              itemCount: plannedTasks.length,
+                            )
+                          : Center(
+                              child: Text(
+                                'No tasks',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                            ),
+                      ongoingTasks.length > 0
+                          ? ListView.builder(
+                              itemBuilder: (context, index) => TaskCard(
+                                title: ongoingTasks[index].title,
+                                taskId: ongoingTasks[index].id,
+                                duration:
+                                    calculateDuration(ongoingTasks[index]),
+                              ),
+                              itemCount: ongoingTasks.length,
+                            )
+                          : Center(
+                              child: Text(
+                                'No tasks',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                            ),
+                      completedTasks.length > 0
+                          ? ListView.builder(
+                              itemBuilder: (context, index) => TaskCard(
+                                title: completedTasks[index].title,
+                                taskId: completedTasks[index].id,
+                                duration:
+                                    calculateDuration(completedTasks[index]),
+                              ),
+                              itemCount: completedTasks.length,
+                            )
+                          : Center(
+                              child: Text(
+                                'No tasks',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                            ),
+                    ],
+                  ),
+                ),
               ],
-            ),
-          ),
-        ],
+            );
+          }
+        },
       ),
     );
   }

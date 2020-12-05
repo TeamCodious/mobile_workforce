@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mobile_workforce/components/action_button.dart';
+import 'package:mobile_workforce/pages/employees_page.dart';
 import 'package:mobile_workforce/pages/map_page.dart';
 import 'package:mobile_workforce/pages/messages_page.dart';
 import 'package:mobile_workforce/pages/settings_page.dart';
@@ -86,9 +87,7 @@ class HomePage extends HookWidget {
           Center(
             child: const Text('Notifications'),
           ),
-          Center(
-            child: const Text('Employees'),
-          ),
+          EmployeesPage(),
         ],
       ),
     );
