@@ -2,13 +2,16 @@ import 'dart:async';
 
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_workforce/components/action_button.dart';
 import 'package:mobile_workforce/components/employee_card.dart';
+import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
+import 'package:mobile_workforce/pages/create_report_page.dart';
 import 'package:mobile_workforce/state.dart';
 
 class TaskDetailPage extends HookWidget {
@@ -20,45 +23,12 @@ class TaskDetailPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final coordinate = LatLng(16.8409, 96.1735);
-
     loadTask() async {
-      String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/' +
-              taskId);
+      String url = Uri.encodeFull(Global.URL + 'tasks/' + taskId);
       return get(url);
     }
 
     return Scaffold(
-      bottomSheet: Container(
-        margin: EdgeInsets.all(5),
-        height: 40,
-        width: double.infinity,
-        child: RaisedButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: Text('Report'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    RaisedButton(
-                      onPressed: () {},
-                      child: Text('Default report'),
-                    ),
-                    RaisedButton(
-                      onPressed: () {},
-                      child: Text('Custom report'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-          child: Text('Report'),
-        ),
-      ),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Task Detail'),
@@ -86,6 +56,7 @@ class TaskDetailPage extends HookWidget {
               );
             } else {
               Task task = Task.fromJSON(snapshot.data.body);
+
               final startTime =
                   DateTime.fromMillisecondsSinceEpoch(task.startTime);
               final formattedStartTime =
@@ -94,6 +65,26 @@ class TaskDetailPage extends HookWidget {
               final formattedDueTime =
                   '${DateFormat.yMMMMd('en_US').format(dueTime)} ${DateFormat('jm').format(dueTime)}';
               String duration;
+
+              loadManger() async {
+                String url =
+                    Uri.encodeFull(Global.URL + 'employees/' + task.managerId);
+                return get(url);
+              }
+
+              defaultReport() async {
+                String url = Uri.encodeFull(Global.URL + 'reports/new');
+                String formattedString =
+                    task.adminIds.map((a) => '"' + a + '"').toList().toString();
+                String body =
+                    '{"task": "$taskId", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "text": "This task is done", "title": "Task complete confirmation"}';
+                Response res = await put(url, body: body);
+                if (res.statusCode == 201) {
+                  Navigator.pop(context);
+                  print('done');
+                }
+              }
+
               if (task.taskState == 'Completed') {
                 final pTime =
                     DateTime.now().millisecondsSinceEpoch - task.dueTime;
@@ -159,7 +150,7 @@ class TaskDetailPage extends HookWidget {
                 }
               }
               return Container(
-                margin: EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 50),
+                margin: EdgeInsets.all(5),
                 child: ListView(
                   shrinkWrap: true,
                   children: [
@@ -204,7 +195,8 @@ class TaskDetailPage extends HookWidget {
                                       builder: (BuildContext context) {
                                         loadAdmins() async {
                                           String url = Uri.encodeFull(
-                                              'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/' +
+                                              Global.URL +
+                                                  'tasks/' +
                                                   taskId +
                                                   '/employees?type=owners');
                                           return get(url);
@@ -302,7 +294,8 @@ class TaskDetailPage extends HookWidget {
                                       builder: (BuildContext context) {
                                         loadAssignees() async {
                                           String url = Uri.encodeFull(
-                                              'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/' +
+                                              Global.URL +
+                                                  'tasks/' +
                                                   taskId +
                                                   '/employees?type=assignees');
                                           return get(url);
@@ -341,33 +334,44 @@ class TaskDetailPage extends HookWidget {
                                                         snapshot.data.body);
 
                                                 return SingleChildScrollView(
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: assignees
-                                                        .map(
-                                                          (a) => EmployeeCard(
-                                                            name: a.id ==
-                                                                    CurrentUserId
-                                                                        .id
-                                                                ? a.username +
-                                                                    ' (You)'
-                                                                : a.username,
-                                                            role: a.role,
-                                                            button: a.id ==
-                                                                    CurrentUserId
-                                                                        .id
-                                                                ? null
-                                                                : ActionButton(
-                                                                    icon: Icon(Icons
-                                                                        .message),
-                                                                    onPressed:
-                                                                        () {},
-                                                                  ),
-                                                          ),
+                                                  child: assignees.length > 0
+                                                      ? Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: assignees
+                                                              .map(
+                                                                (a) =>
+                                                                    EmployeeCard(
+                                                                  name: a.id ==
+                                                                          CurrentUserId
+                                                                              .id
+                                                                      ? a.username +
+                                                                          ' (You)'
+                                                                      : a.username,
+                                                                  role: a.role,
+                                                                  button: a.id ==
+                                                                          CurrentUserId
+                                                                              .id
+                                                                      ? null
+                                                                      : ActionButton(
+                                                                          icon:
+                                                                              Icon(Icons.message),
+                                                                          onPressed:
+                                                                              () {},
+                                                                        ),
+                                                                ),
+                                                              )
+                                                              .toList(),
                                                         )
-                                                        .toList(),
-                                                  ),
+                                                      : Container(
+                                                          child: Text(
+                                                            'No assignees',
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                                fontSize: 15),
+                                                          ),
+                                                        ),
                                                 );
                                               }
                                             },
@@ -392,6 +396,62 @@ class TaskDetailPage extends HookWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 15),
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(5),
+                          child: ExpandablePanel(
+                            header: Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                'Leader',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            expanded: FutureBuilder(
+                                future: loadManger(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  if (snapshot.hasError) {
+                                    print(snapshot.error);
+                                    return Scaffold(
+                                      body: Center(
+                                        child: Text('Error'),
+                                      ),
+                                    );
+                                  } else if (!snapshot.hasData) {
+                                    return Container(
+                                      height: 50,
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  } else {
+                                    User manager =
+                                        User.fromJSON(snapshot.data.body);
+                                    return EmployeeCard(
+                                      id: manager.id,
+                                      name: manager.id == CurrentUserId.id
+                                          ? manager.username + ' (You)'
+                                          : manager.username,
+                                      role: manager.role,
+                                      button: manager.id == CurrentUserId.id
+                                          ? null
+                                          : ActionButton(
+                                              icon: Icon(Icons.message),
+                                              onPressed: () {},
+                                            ),
+                                    );
+                                  }
+                                }),
+                          ),
+                        ),
                       ),
                     ),
                     Container(
@@ -597,6 +657,80 @@ class TaskDetailPage extends HookWidget {
                         ),
                       ),
                     ),
+                    Spacer(),
+                    task.managerId == CurrentUserId.id
+                        ? Container(
+                            margin: EdgeInsets.all(5),
+                            height: 40,
+                            width: double.infinity,
+                            child: RaisedButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      AlertDialog(
+                                    title: Text('Report'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        RaisedButton(
+                                          onPressed: () async {
+                                            String response = await showDialog(
+                                                context: context,
+                                                builder: (BuildContext
+                                                        context) =>
+                                                    AlertDialog(
+                                                      content: Text(
+                                                          'Are you sure to report that this task is done?'),
+                                                      actions: [
+                                                        FlatButton(
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context,
+                                                                  'Yes');
+                                                            },
+                                                            child: Text('Yes')),
+                                                        FlatButton(
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context,
+                                                                  'No');
+                                                            },
+                                                            child: Text('No')),
+                                                      ],
+                                                    ));
+                                            if (response == 'Yes') {
+                                              defaultReport();
+                                            }
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Default report'),
+                                        ),
+                                        RaisedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        CreateReportPage(
+                                                          task: task,
+                                                        )));
+                                          },
+                                          child: Text('Custom report'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text('Report'),
+                            ),
+                          )
+                        : Container(),
                   ],
                 ),
               );

@@ -7,6 +7,7 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_workforce/components/action_button.dart';
 import 'package:mobile_workforce/components/employee_card.dart';
+import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/coordinate_picker.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
@@ -30,7 +31,9 @@ class CreateTaskPage extends HookWidget {
     final adminIds = useState([CurrentUserId.id]);
     final adminRefresh = useState(false);
     final assigneeRefresh = useState(false);
+    final leaderRefresh = useState(false);
     final assigneeIds = useState([]);
+    final leaderId = useState("");
 
     Future<void> showDateTimePicker(ValueNotifier<DateTime> date) async {
       final selectedDate = await showDatePicker(
@@ -79,18 +82,17 @@ class CreateTaskPage extends HookWidget {
           descriptionController.text.isNotEmpty;
     }
 
-    List<String> formattedAdminString =
-        adminIds.value.map((e) => '"' + e + '"').toList();
+    String formattedAdminString =
+        adminIds.value.map((e) => '"' + e + '"').toList().toString();
 
-    List<String> formattedAssigneeString =
-        assigneeIds.value.map((e) => '"' + e + '"').toList();
+    String formattedAssigneeString =
+        assigneeIds.value.map((e) => '"' + e + '"').toList().toString();
 
     _save() async {
-      String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/new');
+      String url = Uri.encodeFull(Global.URL + 'tasks/new');
 
       String body =
-          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": ${formattedAssigneeString.toString()}, "owners": ${formattedAdminString.toString()}, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}}';
+          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": $formattedAssigneeString, "owners": $formattedAdminString, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}, "manager": $leaderId}';
       Response response = await put(url, body: body);
       if (response.statusCode == 201) {
         Navigator.push(context,
@@ -99,16 +101,19 @@ class CreateTaskPage extends HookWidget {
     }
 
     loadAddedAdmins() async {
-      String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees');
+      String url = Uri.encodeFull(Global.URL + 'employees');
 
       String body = '{"employees": ${formattedAdminString.toString()}}';
       return post(url, body: body);
     }
 
+    loadLeader() async {
+      String url = Uri.encodeFull(Global.URL + 'employees/' + leaderId.value);
+      return get(url);
+    }
+
     loadAddedAssignees() async {
-      String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees');
+      String url = Uri.encodeFull(Global.URL + 'employees');
 
       String body = '{"employees": ${formattedAssigneeString.toString()}}';
       return post(url, body: body);
@@ -247,7 +252,7 @@ class CreateTaskPage extends HookWidget {
                             onPressed: () {
                               loadManagers() async {
                                 String url = Uri.encodeFull(
-                                    'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=managers');
+                                    Global.URL + 'employees?type=managers');
                                 return get(url);
                               }
 
@@ -392,6 +397,7 @@ class CreateTaskPage extends HookWidget {
                                                   icon: Icon(Icons.remove),
                                                   onPressed: () {
                                                     adminIds.value.remove(a.id);
+                                                    adminRefresh.value = true;
                                                     setState(() {
                                                       admins.remove(
                                                           admins.where((aa) =>
@@ -409,6 +415,170 @@ class CreateTaskPage extends HookWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
+                          'Leader',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                        leaderId.value == ""
+                            ? ActionButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () {
+                                  loadAssignees() async {
+                                    String url = Uri.encodeFull(Global.URL +
+                                        'employees?type=employees');
+                                    return get(url);
+                                  }
+
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) =>
+                                          AlertDialog(
+                                            title: Text(
+                                              'Choose leader',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            content: StatefulBuilder(
+                                              builder: (context, setState) =>
+                                                  FutureBuilder(
+                                                      future: loadAssignees(),
+                                                      builder:
+                                                          (BuildContext context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                        if (snapshot.hasError) {
+                                                          print(snapshot.error);
+                                                          return Scaffold(
+                                                            body: Center(
+                                                              child:
+                                                                  Text('Error'),
+                                                            ),
+                                                          );
+                                                        } else if (!snapshot
+                                                            .hasData) {
+                                                          return Scaffold(
+                                                            body: Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                          );
+                                                        } else {
+                                                          final List<User>
+                                                              users =
+                                                              User.fromJSONArray(
+                                                                  snapshot.data
+                                                                      .body);
+                                                          if (users.length >
+                                                              0) {
+                                                            return Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: users
+                                                                  .map((u) =>
+                                                                      EmployeeCard(
+                                                                        name: u
+                                                                            .username,
+                                                                        role: u
+                                                                            .role,
+                                                                        button:
+                                                                            ActionButton(
+                                                                          icon:
+                                                                              Icon(Icons.add),
+                                                                          onPressed:
+                                                                              () {
+                                                                            leaderId.value =
+                                                                                u.id;
+                                                                            leaderRefresh.value =
+                                                                                true;
+                                                                            Navigator.pop(context);
+                                                                          },
+                                                                        ),
+                                                                      ))
+                                                                  .toList(),
+                                                            );
+                                                          } else {
+                                                            return Container(
+                                                              child: Text(
+                                                                'No more employees',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        15),
+                                                              ),
+                                                            );
+                                                          }
+                                                        }
+                                                      }),
+                                            ),
+                                          ));
+                                })
+                            : Container(
+                                height: 50,
+                              ),
+                      ],
+                    ),
+                    leaderId.value == ""
+                        ? Container()
+                        : StatefulBuilder(
+                            builder: (context, setState) => FutureBuilder(
+                                future: loadLeader(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (leaderRefresh.value) {
+                                      setState(() {
+                                        leaderRefresh.value = false;
+                                      });
+                                    }
+                                  });
+
+                                  if (snapshot.hasError) {
+                                    print(snapshot.error);
+                                    return Scaffold(
+                                      body: Center(
+                                        child: Text('Error'),
+                                      ),
+                                    );
+                                  } else if (!snapshot.hasData) {
+                                    return Scaffold(
+                                      body: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  } else {
+                                    User leader =
+                                        User.fromJSON(snapshot.data.body);
+                                    print('hi');
+                                    print(leader.username);
+                                    return EmployeeCard(
+                                      name: leader.username,
+                                      role: leader.role,
+                                      button: ActionButton(
+                                        icon: Icon(Icons.remove),
+                                        onPressed: () {
+                                          setState(() {
+                                            leaderId.value = "";
+                                          });
+                                        },
+                                      ),
+                                    );
+
+                                    // return Container();
+                                  }
+                                }),
+                          ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
                           'Assignees',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
@@ -420,7 +590,7 @@ class CreateTaskPage extends HookWidget {
                             onPressed: () {
                               loadAssignees() async {
                                 String url = Uri.encodeFull(
-                                    'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=employees');
+                                    Global.URL + 'employees?type=employees');
                                 return get(url);
                               }
 
@@ -469,8 +639,11 @@ class CreateTaskPage extends HookWidget {
                                                               .where((u) =>
                                                                   !assigneeIds
                                                                       .value
-                                                                      .contains(
-                                                                          u.id))
+                                                                      .contains(u
+                                                                          .id) &&
+                                                                  u.id !=
+                                                                      leaderId
+                                                                          .value)
                                                               .toList();
                                                           if (users.length >
                                                               0) {
@@ -561,6 +734,7 @@ class CreateTaskPage extends HookWidget {
                                             icon: Icon(Icons.remove),
                                             onPressed: () {
                                               assigneeIds.value.remove(a.id);
+                                              assigneeRefresh.value = true;
                                               setState(() {
                                                 assignees.remove(
                                                     assignees.where(

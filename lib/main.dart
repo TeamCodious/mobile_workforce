@@ -24,15 +24,16 @@ class MainFrame extends HookWidget {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String token = pref.getString('token') ?? '';
     if (token != '') {
-      String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/me/');
+      String url = Uri.encodeFull(Global.URL + 'me/');
       Map<String, String> headers = {'tokenKey': token};
       Response response = await get(url, headers: headers);
       Map<String, dynamic> data = jsonDecode(response.body);
-      CurrentUserId.update(data['id']);
+      CurrentUserId.updateId(data['id']);
+      CurrentUserId.updateRole(data['employee_role']);
     }
     return token;
   }
+
   StreamSubscription<ConnectivityResult> subscription;
   @override
   Widget build(BuildContext context) {
@@ -52,14 +53,17 @@ class MainFrame extends HookWidget {
     final isOnline = useState(false);
     final hasBackups = useState(false);
     void check() async {
-      PermissionStatus permission = await LocationPermissions().checkPermissionStatus();
+      PermissionStatus permission =
+          await LocationPermissions().checkPermissionStatus();
       if (permission == PermissionStatus.denied) {
-        PermissionStatus permission = await LocationPermissions().requestPermissions();
+        PermissionStatus permission =
+            await LocationPermissions().requestPermissions();
         if (permission == PermissionStatus.denied) {
           SystemNavigator.pop();
         }
       }
     }
+
     Future<void> uploadBackups() async {
       final locations = await SQLite.locations();
       SharedPreferences pref = await SharedPreferences.getInstance();
@@ -67,10 +71,9 @@ class MainFrame extends HookWidget {
       if (userID == "") return;
 
       for (var location in locations) {
-        String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/locations/new');
+        String url = Uri.encodeFull(Global.URL + 'locations/new');
         String body =
-          '{"time": ${location.time}, "latitude": ${location.latitude}, "longitude": ${location.longitude}, "employee": "$userID"}';
+            '{"time": ${location.time}, "latitude": ${location.latitude}, "longitude": ${location.longitude}, "employee": "$userID"}';
         try {
           Response response = await put(url, body: body);
           if (response.statusCode == 201) {
@@ -85,6 +88,7 @@ class MainFrame extends HookWidget {
       }
       print("Length: ${locations.length}");
     }
+
     useEffect(() {
       check();
       return () {};
@@ -94,7 +98,8 @@ class MainFrame extends HookWidget {
         if (event == ConnectivityResult.none) {
           print('Offline');
           isOnline.value = false;
-        } else if (event == ConnectivityResult.mobile || event == ConnectivityResult.wifi) {
+        } else if (event == ConnectivityResult.mobile ||
+            event == ConnectivityResult.wifi) {
           print('Online');
           if (!isOnline.value) {
             isOnline.value = true;
@@ -118,9 +123,10 @@ class MainFrame extends HookWidget {
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (isOnline.value) {
             if (hasBackups.value) {
-
               return Scaffold(
-                body: Center(child: Text("Uploading your backups."),),
+                body: Center(
+                  child: Text("Uploading your backups."),
+                ),
               );
             }
             if (snapshot.hasError || !snapshot.hasData) {
@@ -138,7 +144,9 @@ class MainFrame extends HookWidget {
             }
           } else {
             return Scaffold(
-              body: Center(child: Text("Going Offline."),),
+              body: Center(
+                child: Text("Going Offline."),
+              ),
             );
           }
         },

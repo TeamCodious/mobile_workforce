@@ -4,9 +4,11 @@ import 'package:mobile_workforce/pages/employee_detail_page.dart';
 
 class EmployeeCard extends StatelessWidget {
   final name;
+  final id;
   final role;
   final ActionButton button;
-  EmployeeCard({Key key, this.name, this.role, this.button}) : super(key: key);
+  EmployeeCard({Key key, this.name, this.id, this.role, this.button})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -15,7 +17,8 @@ class EmployeeCard extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (BuildContext context) => EmployeeDetailPage()));
+                  builder: (BuildContext context) =>
+                      EmployeeDetailPage(id: id)));
         },
         child: Container(
           padding: EdgeInsets.all(8),

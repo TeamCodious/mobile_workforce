@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart';
 import 'package:mobile_workforce/components/tab_button.dart';
 import 'package:mobile_workforce/components/task_card.dart';
+import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/create_task_page.dart';
 import 'package:mobile_workforce/state.dart';
@@ -15,9 +16,7 @@ class TasksPage extends HookWidget {
 
     loadTasks() async {
       String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/' +
-              CurrentUserId.id +
-              '/tasks');
+          Global.URL + 'employees/' + CurrentUserId.id + '/tasks?type=all');
       Response response = await get(url);
       return Task.fromJSONArray(response.body);
     }
@@ -91,23 +90,26 @@ class TasksPage extends HookWidget {
     return Scaffold(
       floatingActionButton: Tooltip(
         message: 'Create new task',
-        child: FloatingActionButton(
-          backgroundColor: Theme.of(context).primaryColor,
-          child: Icon(
-            Icons.add,
-          ),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => CreateTaskPage()));
-          },
-        ),
+        child: CurrentUserId.role == 'Manager'
+            ? FloatingActionButton(
+                backgroundColor: Theme.of(context).primaryColor,
+                child: Icon(
+                  Icons.add,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => CreateTaskPage()));
+                },
+              )
+            : null,
       ),
       body: FutureBuilder(
         future: loadTasks(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasError) {
+            print(snapshot);
             print(snapshot.error);
             return Scaffold(
               body: Center(

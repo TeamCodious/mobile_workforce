@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 class Task {
   String id;
   String title;
@@ -8,6 +9,7 @@ class Task {
   String taskState;
   List<dynamic> adminIds;
   List<dynamic> assigneeIds;
+  String managerId;
 
   static Task fromJSON(String jsonString) {
     final Map<String, dynamic> data = jsonDecode(jsonString);
@@ -19,7 +21,8 @@ class Task {
       ..dueTime = data['due_time']
       ..taskState = data['task_state']
       ..adminIds = data['owners']
-      ..assigneeIds = data['assignees'];
+      ..assigneeIds = data['assignees']
+      ..managerId = data['manager'];
   }
 
   static List<Task> fromJSONArray(String jsonString) {
@@ -33,7 +36,8 @@ class Task {
           ..dueTime = t['due_time']
           ..taskState = t['task_state']
           ..adminIds = t['owners']
-          ..assigneeIds = t['assignees'])
+          ..assigneeIds = t['assignees']
+          ..managerId = t['manager'])
         .toList();
   }
 }
@@ -102,5 +106,44 @@ class Location {
       ..longitude = data['longitude']
       ..time = data['time']
       ..employee = data['employee'];
+  }
+}
+
+class Report {
+  String id;
+  bool confirmed;
+  List<dynamic> receivers;
+  String reporter;
+  String task;
+  String title;
+  String text;
+  int createdTime;
+
+  static Report fromJSON(String jsonString) {
+    final Map<String, dynamic> data = jsonDecode(jsonString);
+    return Report()
+      ..id = data['id']
+      ..title = data['title']
+      ..text = data['text']
+      ..task = data['task']
+      ..receivers = data['receivers']
+      ..reporter = data['reporter']
+      ..confirmed = data['confirmed']
+      ..createdTime = data['createdAt'];
+  }
+
+  static List<Report> fromJSONArray(String jsonString) {
+    final Iterable<dynamic> data = jsonDecode(jsonString);
+    return data
+        .map((r) => Report()
+          ..id = r['id']
+          ..title = r['title']
+          ..text = r['text']
+          ..task = r['task']
+          ..receivers = r['receivers']
+          ..reporter = r['reporter']
+          ..confirmed = r['confirmed']
+          ..createdTime = r['createdAt'])
+        .toList();
   }
 }
