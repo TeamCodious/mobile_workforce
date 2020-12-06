@@ -68,7 +68,7 @@ class TaskDetailPage extends HookWidget {
 
               loadManger() async {
                 String url =
-                    Uri.encodeFull(Global.URL + 'employees/' + task.managerId);
+                    Uri.encodeFull(Global.URL + 'employees/' + task.manager);
                 return get(url);
               }
 
@@ -590,7 +590,8 @@ class TaskDetailPage extends HookWidget {
                                         mapController.complete(controller),
                                     mapType: MapType.normal,
                                     initialCameraPosition: CameraPosition(
-                                      target: LatLng(task.latitude, task.longitude),
+                                      target:
+                                          LatLng(task.latitude, task.longitude),
                                       zoom: 15,
                                     ),
                                     markers: List.of([
@@ -598,7 +599,8 @@ class TaskDetailPage extends HookWidget {
                                         markerId: MarkerId(
                                           task.id,
                                         ),
-                                        position: LatLng(task.latitude, task.longitude),
+                                        position: LatLng(
+                                            task.latitude, task.longitude),
                                       )
                                     ]).toSet(),
                                     scrollGesturesEnabled: false,
@@ -660,7 +662,7 @@ class TaskDetailPage extends HookWidget {
                       ),
                     ),
                     Spacer(),
-                    task.managerId == CurrentUserId.id
+                    task.manager == CurrentUserId.id
                         ? Container(
                             margin: EdgeInsets.all(5),
                             height: 40,
