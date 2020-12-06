@@ -7,6 +7,7 @@ import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginPage extends HookWidget {
   @override
@@ -15,9 +16,10 @@ class LoginPage extends HookWidget {
     String _password;
 
     login() async {
+      String deviceToken = await FirebaseMessaging().getToken();
       String body =
           '{"email": "' + _email + '", "password": "' + _password + '"}';
-      String url = Uri.encodeFull(Global.URL + 'login/');
+      String url = Uri.encodeFull(Global.URL + 'login?deviceToken=$deviceToken');
       Response response = await post(url, body: body);
       Map<String, dynamic> res = json.decode(response.body);
       CurrentUserId.update(res['userId'], res['employee_role']);
