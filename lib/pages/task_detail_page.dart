@@ -22,7 +22,6 @@ class TaskDetailPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coordinate = LatLng(16.8409, 96.1735);
     loadTask() async {
       String url = Uri.encodeFull(Global.URL + 'tasks/' + taskId);
       return get(url);
@@ -77,10 +76,28 @@ class TaskDetailPage extends HookWidget {
                 String formattedString =
                     task.adminIds.map((a) => '"' + a + '"').toList().toString();
                 String body =
-                    '{"task": "$taskId", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "text": "This task is done", "title": "Task complete confirmation"}';
+                    '{"task": "$taskId", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "text": "This task is done", "title": "Task complete confirmation", "confirmedTime": 0}';
                 Response res = await put(url, body: body);
                 if (res.statusCode == 201) {
                   Navigator.pop(context);
+                  print('done');
+                }
+              }
+
+              startTask() async {
+                String url = Uri.encodeFull(
+                    Global.URL + 'tasks/' + task.id + '/change?type=start');
+                String body =
+                    '{"time": ${DateTime.now().millisecondsSinceEpoch}}';
+                Response res = await patch(url, body: body);
+                if (res.statusCode == 204) {
+                  Navigator.pop(context);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => TaskDetailPage(
+                                taskId: task.id,
+                              )));
                   print('done');
                 }
               }
@@ -663,77 +680,119 @@ class TaskDetailPage extends HookWidget {
                     ),
                     Spacer(),
                     task.manager == CurrentUserId.id
-                        ? Container(
-                            margin: EdgeInsets.all(5),
-                            height: 40,
-                            width: double.infinity,
-                            child: RaisedButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) =>
-                                      AlertDialog(
-                                    title: Text('Report'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        RaisedButton(
-                                          onPressed: () async {
-                                            String response = await showDialog(
-                                                context: context,
-                                                builder: (BuildContext
-                                                        context) =>
-                                                    AlertDialog(
-                                                      content: Text(
-                                                          'Are you sure to report that this task is done?'),
-                                                      actions: [
-                                                        FlatButton(
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                  context,
-                                                                  'Yes');
-                                                            },
-                                                            child: Text('Yes')),
-                                                        FlatButton(
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                  context,
-                                                                  'No');
-                                                            },
-                                                            child: Text('No')),
-                                                      ],
-                                                    ));
-                                            if (response == 'Yes') {
-                                              defaultReport();
-                                            }
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Default report'),
+                        ? task.taskState == 'Ongoing'
+                            ? Container(
+                                margin: EdgeInsets.all(5),
+                                height: 40,
+                                width: double.infinity,
+                                child: RaisedButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) =>
+                                          AlertDialog(
+                                        title: Text('Report'),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            RaisedButton(
+                                              onPressed: () async {
+                                                String response =
+                                                    await showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            AlertDialog(
+                                                              content: Text(
+                                                                  'Are you sure to report that this task is done?'),
+                                                              actions: [
+                                                                FlatButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.pop(
+                                                                          context,
+                                                                          'Yes');
+                                                                    },
+                                                                    child: Text(
+                                                                        'Yes')),
+                                                                FlatButton(
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.pop(
+                                                                          context,
+                                                                          'No');
+                                                                    },
+                                                                    child: Text(
+                                                                        'No')),
+                                                              ],
+                                                            ));
+                                                if (response == 'Yes') {
+                                                  defaultReport();
+                                                }
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('Default report'),
+                                            ),
+                                            RaisedButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            CreateReportPage(
+                                                              task: task,
+                                                            )));
+                                              },
+                                              child: Text('Custom report'),
+                                            ),
+                                          ],
                                         ),
-                                        RaisedButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        CreateReportPage(
-                                                          task: task,
-                                                        )));
-                                          },
-                                          child: Text('Custom report'),
-                                        ),
-                                      ],
+                                      ),
+                                    );
+                                  },
+                                  child: Text('Report'),
+                                ),
+                              )
+                            : task.taskState == 'Planned'
+                                ? Container(
+                                    margin: EdgeInsets.all(5),
+                                    height: 40,
+                                    width: double.infinity,
+                                    child: RaisedButton(
+                                      onPressed: () async {
+                                        String response = await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) =>
+                                                AlertDialog(
+                                                  content: Text(
+                                                      'Are you sure to start this task?'),
+                                                  actions: [
+                                                    FlatButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context, 'Yes');
+                                                        },
+                                                        child: Text('Yes')),
+                                                    FlatButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context, 'No');
+                                                        },
+                                                        child: Text('No')),
+                                                  ],
+                                                ));
+                                        if (response == 'Yes') {
+                                          startTask();
+                                        }
+                                      },
+                                      child: Text('Start'),
                                     ),
-                                  ),
-                                );
-                              },
-                              child: Text('Report'),
-                            ),
-                          )
+                                  )
+                                : Container()
                         : Container(),
                   ],
                 ),

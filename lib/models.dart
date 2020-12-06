@@ -133,6 +133,7 @@ class Report {
   String title;
   String text;
   int createdTime;
+  int confirmedTime;
 
   static Report fromJSON(String jsonString) {
     final Map<String, dynamic> data = jsonDecode(jsonString);
@@ -144,7 +145,8 @@ class Report {
       ..receivers = data['receivers']
       ..reporter = data['reporter']
       ..confirmed = data['confirmed']
-      ..createdTime = data['createdAt'];
+      ..createdTime = data['createdAt']
+      ..confirmedTime = data['confirmedTime'];
   }
 
   static List<Report> fromJSONArray(String jsonString) {
@@ -158,7 +160,8 @@ class Report {
           ..receivers = r['receivers']
           ..reporter = r['reporter']
           ..confirmed = r['confirmed']
-          ..createdTime = r['createdAt'])
+          ..createdTime = r['createdAt']
+          ..confirmedTime = r['confirmedTime'])
         .toList();
   }
 }

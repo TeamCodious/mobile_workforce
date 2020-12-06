@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_workforce/components/action_button.dart';
 import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
 
@@ -31,6 +32,11 @@ class ReportDetailPage extends HookWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Report Detail'),
+        actions: [
+          Tooltip(
+              message: 'Chat with reporter',
+              child: ActionButton(icon: Icon(Icons.message), onPressed: () {})),
+        ],
       ),
       body: FutureBuilder(
         future: loadReport(),
@@ -53,10 +59,56 @@ class ReportDetailPage extends HookWidget {
                 snapshot.data['report'].createdTime);
             final formattedCt =
                 '${DateFormat.yMMMMd('en_US').format(ct)} ${DateFormat('jm').format(ct)}';
+            final DateTime cft = DateTime.fromMillisecondsSinceEpoch(
+                snapshot.data['report'].confirmedTime);
+            final formattedCft =
+                '${DateFormat.yMMMMd('en_US').format(cft)} ${DateFormat('jm').format(cft)}';
+
+            finishTask() async {
+              String url = Uri.encodeFull(Global.URL +
+                  'tasks/' +
+                  snapshot.data['task'].id +
+                  '/change?type=finish');
+              String body =
+                  '{"time": ${DateTime.now().millisecondsSinceEpoch}}';
+              Response res = await patch(url, body: body);
+              if (res.statusCode == 204) {
+                Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => ReportDetailPage(
+                              id: snapshot.data['report'].id,
+                            )));
+                print('done');
+              }
+            }
+
+            confirmReport() async {
+              String url = Uri.encodeFull(Global.URL +
+                  'reports/' +
+                  snapshot.data['report'].id +
+                  '/confirm');
+              String body = '{"isConfirmed": true}';
+              Response res = await patch(url, body: body);
+              if (res.statusCode == 204) {
+                print('done');
+              }
+            }
+
+            deleteReport() async {
+              String url = Uri.encodeFull(Global.URL + 'reports/' + id);
+              Response res = await delete(url);
+              if (res.statusCode == 204) {
+                print('done');
+              }
+              Navigator.pop(context);
+            }
+
             return Container(
-              margin: EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 50),
-              child: ListView(
-                shrinkWrap: true,
+              margin: EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     margin: EdgeInsets.symmetric(vertical: 10),
@@ -77,6 +129,50 @@ class ReportDetailPage extends HookWidget {
                       ),
                     ),
                   ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      'Report state',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      snapshot.data['report'].confirmed
+                          ? 'Confirmed'
+                          : 'Unconfirmed',
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  snapshot.data['report'].confirmed
+                      ? Container(
+                          margin: EdgeInsets.symmetric(vertical: 10),
+                          child: Text(
+                            'Confirmed time',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : Container(),
+                  snapshot.data['report'].confirmed
+                      ? Container(
+                          margin: EdgeInsets.only(bottom: 20),
+                          child: Text(
+                            formattedCft,
+                            style: TextStyle(
+                              fontSize: 20,
+                            ),
+                          ),
+                        )
+                      : Container(),
                   Container(
                     margin: EdgeInsets.symmetric(vertical: 10),
                     child: Text(
@@ -163,6 +259,87 @@ class ReportDetailPage extends HookWidget {
                       ),
                     ),
                   ),
+                  Spacer(),
+                  snapshot.data['report'].confirmed
+                      ? Container()
+                      : Container(
+                          margin: EdgeInsets.all(5),
+                          height: 40,
+                          width: double.infinity,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.only(right: 5),
+                                  child: RaisedButton(
+                                    onPressed: () async {
+                                      String response = await showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              AlertDialog(
+                                                content: Text(
+                                                    'Are you sure to delete this report?'),
+                                                actions: [
+                                                  FlatButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(
+                                                            context, 'Yes');
+                                                      },
+                                                      child: Text('Yes')),
+                                                  FlatButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(
+                                                            context, 'No');
+                                                      },
+                                                      child: Text('No')),
+                                                ],
+                                              ));
+                                      if (response == 'Yes') {
+                                        deleteReport();
+                                      }
+                                    },
+                                    child: Text('Delete'),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.only(left: 5),
+                                  child: RaisedButton(
+                                    onPressed: () async {
+                                      String response = await showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              AlertDialog(
+                                                content: Text(
+                                                    'Are you sure to confirm that this task is done?'),
+                                                actions: [
+                                                  FlatButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(
+                                                            context, 'Yes');
+                                                      },
+                                                      child: Text('Yes')),
+                                                  FlatButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(
+                                                            context, 'No');
+                                                      },
+                                                      child: Text('No')),
+                                                ],
+                                              ));
+                                      if (response == 'Yes') {
+                                        confirmReport();
+                                        finishTask();
+                                      }
+                                    },
+                                    child: Text('Confirm'),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
                 ],
               ),
             );

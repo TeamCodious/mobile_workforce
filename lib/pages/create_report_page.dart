@@ -28,7 +28,7 @@ class CreateReportPage extends HookWidget {
       String formattedString =
           task.adminIds.map((a) => '"' + a + '"').toList().toString();
       String body =
-          '{"task": "${task.id}", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "title": "${titleController.text}", "text": "${textController.text}"}';
+          '{"task": "${task.id}", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "title": "${titleController.text}", "text": "${textController.text}", "confirmedTime" : 0}';
       Response res = await put(url, body: body);
       if (res.statusCode == 201) {
         Navigator.pop(context);
