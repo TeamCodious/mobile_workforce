@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mobile_workforce/components/action_button.dart';
-import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/employees_page.dart';
 import 'package:mobile_workforce/pages/map_page.dart';
 import 'package:mobile_workforce/pages/messages_page.dart';
+import 'package:mobile_workforce/pages/reportsPage.dart';
 import 'package:mobile_workforce/pages/settings_page.dart';
 import 'package:mobile_workforce/pages/tasks_page.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -37,21 +37,21 @@ class HomePage extends HookWidget {
         leading: Tooltip(
           message: 'Profile',
           child: ActionButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => SettingsPage()));
+            },
             icon: Icon(Icons.person),
           ),
         ),
         actions: [
           Tooltip(
-            message: 'Settings',
+            message: 'Notifications',
             child: ActionButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => SettingsPage()));
-              },
-              icon: Icon(Icons.settings),
+              onPressed: () {},
+              icon: Icon(Icons.notifications),
             ),
           )
         ],
@@ -81,8 +81,8 @@ class HomePage extends HookWidget {
             ),
             Tab(
               child: tabIndex.value == 3
-                  ? Icon(Icons.notifications)
-                  : Icon(Icons.notifications_outlined),
+                  ? Icon(Icons.report)
+                  : Icon(Icons.report_outlined),
             ),
             Tab(
               child: tabIndex.value == 4
@@ -99,9 +99,7 @@ class HomePage extends HookWidget {
           TasksPage(),
           MapPage(),
           MessagesPage(),
-          Center(
-            child: const Text('Notifications'),
-          ),
+          ReportsPage(),
           EmployeesPage(),
         ],
       ),
@@ -109,32 +107,42 @@ class HomePage extends HookWidget {
   }
 
   void startTracking() async {
-    await AndroidAlarmManager.periodic(Duration(seconds: 5), Global.BACKGROUND_TASK_ID, callback);
+    await AndroidAlarmManager.periodic(
+        Duration(seconds: 5), Global.BACKGROUND_TASK_ID, callback);
   }
 
   static Future<void> callback() async {
     print("Alarm fired");
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     bool result = await isInternet();
     print(position);
     // WARNING:
-    // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app. 
-    if(result == true) {
+    // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app.
+    if (result == true) {
       // await save(position);
     } else {
       // await SQLite.insertPosition(position);
     }
     //debug
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
-    var initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        new FlutterLocalNotificationsPlugin();
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'location_update', 'Location Updates', 'You will receive location updates here',
-        importance: Importance.max, priority: Priority.high);
-    var platformChannelSpecifics = new NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, 'PUT success $result', "${position.longitude} ${position.latitude}", platformChannelSpecifics);
+        'location_update',
+        'Location Updates',
+        'You will receive location updates here',
+        importance: Importance.max,
+        priority: Priority.high);
+    var platformChannelSpecifics =
+        new NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, 'PUT success $result',
+        "${position.longitude} ${position.latitude}", platformChannelSpecifics);
   }
 
   static Future<void> save(Position position) async {
@@ -144,13 +152,12 @@ class HomePage extends HookWidget {
       await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
       return;
     }
-    String url = Uri.encodeFull(
-        'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/locations/new');
+    String url = Uri.encodeFull(Global.URL + 'locations/new');
 
     String body =
         '{"time": ${DateTime.now().toUtc().millisecondsSinceEpoch}, "latitude": ${position.latitude}, "longitude": ${position.longitude}, "employee": "$userID"}';
-        print(body);
-        print(CurrentUserId.id);
+    print(body);
+    print(CurrentUserId.id);
     try {
       Response response = await put(url, body: body);
       if (response.statusCode != 201) {
