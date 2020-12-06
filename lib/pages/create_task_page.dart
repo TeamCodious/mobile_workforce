@@ -90,7 +90,8 @@ class CreateTaskPage extends HookWidget {
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/tasks/new');
 
       String body =
-          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": ${formattedAssigneeString.toString()}, "owners": ${formattedAdminString.toString()}, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}}';
+          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": ${formattedAssigneeString.toString()}, "owners": ${formattedAdminString.toString()}, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}, "latitude": ${coordinate.value.latitude}, "longitude": ${coordinate.value.longitude}, "location": "${locationNameController.text}" }';
+          print(body);
       Response response = await put(url, body: body);
       if (response.statusCode == 201) {
         Navigator.push(context,
@@ -192,7 +193,7 @@ class CreateTaskPage extends HookWidget {
                       },
                     ),
                     TextFormField(
-                      readOnly: true,
+                      // readOnly: true,
                       autocorrect: false,
                       controller: locationNameController,
                       decoration: InputDecoration(
@@ -364,17 +365,13 @@ class CreateTaskPage extends HookWidget {
 
                             if (snapshot.hasError) {
                               print(snapshot.error);
-                              return Scaffold(
-                                body: Center(
+                              return Center(
                                   child: Text('Error'),
-                                ),
-                              );
+                                );
                             } else if (!snapshot.hasData) {
-                              return Scaffold(
-                                body: Center(
+                              return Center(
                                   child: CircularProgressIndicator(),
-                                ),
-                              );
+                                );
                             } else {
                               List<User> admins =
                                   User.fromJSONArray(snapshot.data.body);
@@ -537,17 +534,13 @@ class CreateTaskPage extends HookWidget {
 
                             if (snapshot.hasError) {
                               print(snapshot.error);
-                              return Scaffold(
-                                body: Center(
+                              return Center(
                                   child: Text('Error'),
-                                ),
-                              );
+                                );
                             } else if (!snapshot.hasData) {
-                              return Scaffold(
-                                body: Center(
+                              return Center(
                                   child: CircularProgressIndicator(),
-                                ),
-                              );
+                                );
                             } else {
                               List<User> assignees =
                                   User.fromJSONArray(snapshot.data.body);

@@ -506,11 +506,13 @@ class TaskDetailPage extends HookWidget {
                               ),
                             ),
                             expanded: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
                                   margin: EdgeInsets.symmetric(vertical: 10),
+                                  padding: EdgeInsets.symmetric(horizontal: 5),
                                   child: Text(
-                                    'Junction 8, 8 miles, Kyaik Waing Pagoda Rd, Yangon',
+                                    task.location,
                                     style: TextStyle(
                                       fontSize: 15,
                                     ),

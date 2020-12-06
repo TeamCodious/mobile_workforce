@@ -11,9 +11,11 @@ class MapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
-      if (CurrentUserId.role == 'Manager') {
+      if (CurrentUserId.role == "Manager") {
+        print('manager');
         return ManagerMapPage();
       } else {
+        print('employee');
         return EmployeeMapPage();
       }
     });
@@ -30,14 +32,15 @@ class ManagerMapPage extends StatefulWidget {
 class _ManagerMapPageState extends State<ManagerMapPage> {
   Timer timer;
   List<User> employees = [];
-  BitmapDescriptor pinLocationIcon;
+  List<Task> tasks = [];
+  Set<Marker> markers = Set();
   @override
   void initState() {
     super.initState();
-    _getEmployees();
+    _getMarkers();
     // timer = Timer.periodic(Duration(seconds: 10), (timer) {
     //   print("hello");
-    //   _getEmployees();
+      // _getMarkers();
     // });
   }
   @override
@@ -46,19 +49,36 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
     // timer = null;
     super.dispose();
   }
-  void _getEmployees() async {
+    void _getMarkers() async {
       String url = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=employees');
       Response response = await get(url);
+      final array = User.fromJSONArray(response.body).where((element) => element.latitude != null).toList();
+      String urlTask = Uri.encodeFull(
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/${CurrentUserId.id}/tasks?type=owner');
+      Response responseTask = await get(urlTask);
       setState(() {
+        markers = Task.fromJSONArray(responseTask.body).map((e) => Marker(markerId: MarkerId(e.id), infoWindow: InfoWindow(title: e.title),
+                position: LatLng(
+                  e.latitude,
+                  e.longitude,
+                ),)).toSet();
+        markers.addAll(array.map((e) => Marker(
+                infoWindow: InfoWindow(title: e.fullname),
+                markerId: MarkerId(e.username),
+                position: LatLng(
+                  e.latitude,
+                  e.longitude,
+                ),
+              )).toSet());
         employees = User.fromJSONArray(response.body).where((element) => element.latitude != null).toList();
+        print(markers.length);
       });
     }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-          // onMapCreated: initMap(context),
           zoomControlsEnabled: false,
           mapType: MapType.normal,
 
@@ -73,15 +93,7 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
             strokeWidth: 0,
             radius: 100,
           ))),
-          markers: Set<Marker>.of(employees.map((e) => Marker(
-                infoWindow: InfoWindow(title: e.fullname),
-                markerId: MarkerId(e.username),
-                position: LatLng(
-                  e.latitude,
-                  e.longitude,
-                ),
-                onTap: () {},
-              ))),
+          markers: markers,
             
         )
     );
@@ -96,7 +108,6 @@ class EmployeeMapPage extends StatefulWidget {
 }
 
 class _EmployeeMapPageState extends State<EmployeeMapPage> {
-  BitmapDescriptor bit;
   Timer timer;
   List<Task> tasks = [];
   @override
@@ -116,18 +127,16 @@ class _EmployeeMapPageState extends State<EmployeeMapPage> {
   }
   void _getTasks() async {
       String url = Uri.encodeFull(
-          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/${CurrentUserId.id}/tasks?type=owner');
+          'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/${CurrentUserId.id}/tasks?type=assignee');
       Response response = await get(url);
       setState(() {
         tasks = Task.fromJSONArray(response.body);
       });
-      print(tasks.length);
     }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-          // onMapCreated: initMap(context),
           zoomControlsEnabled: false,
           mapType: MapType.normal,
 
