@@ -20,8 +20,7 @@ class LoginPage extends HookWidget {
       String url = Uri.encodeFull(Global.URL + 'login/');
       Response response = await post(url, body: body);
       Map<String, dynamic> res = json.decode(response.body);
-      CurrentUserId.updateId(res['userId']);
-      CurrentUserId.updateRole(res['employee_role']);
+      CurrentUserId.update(res['userId'], res['employee_role']);
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.setString('token', res['id']);
       Navigator.push(context,

@@ -9,7 +9,10 @@ class Task {
   String taskState;
   List<dynamic> adminIds;
   List<dynamic> assigneeIds;
-  String managerId;
+  double latitude;
+  double longitude;
+  String location;
+  String manager;
 
   static Task fromJSON(String jsonString) {
     final Map<String, dynamic> data = jsonDecode(jsonString);
@@ -22,7 +25,10 @@ class Task {
       ..taskState = data['task_state']
       ..adminIds = data['owners']
       ..assigneeIds = data['assignees']
-      ..managerId = data['manager'];
+      ..manager = data['manager']
+      ..latitude = data['latitude'] ?? 0.0
+      ..location = data['location'] ?? "nil"
+      ..longitude = data['longitude'] ?? 0.0;
   }
 
   static List<Task> fromJSONArray(String jsonString) {
@@ -37,7 +43,10 @@ class Task {
           ..taskState = t['task_state']
           ..adminIds = t['owners']
           ..assigneeIds = t['assignees']
-          ..managerId = t['manager'])
+          ..manager = t['manager']
+          ..latitude = t['latitude'] ?? 0.0
+          ..location = t['location'] ?? "nil"
+          ..longitude = t['longitude'] ?? 0.0)
         .toList();
   }
 }
@@ -49,6 +58,8 @@ class User {
   String email;
   String role;
   String phoneNumber;
+  double latitude;
+  double longitude;
 
   static User fromJSON(String jsonString) {
     final Map<String, dynamic> data = jsonDecode(jsonString);
@@ -58,7 +69,9 @@ class User {
       ..fullname = data['full_name']
       ..email = data['email']
       ..role = data['employee_role']
-      ..phoneNumber = data['phone_no'];
+      ..phoneNumber = data['phone_no']
+      ..latitude = data['latitude'] ?? null
+      ..longitude = data['longitude'] ?? null;
   }
 
   static List<User> fromJSONArray(String jsonString) {
@@ -70,7 +83,9 @@ class User {
           ..fullname = u['full_name']
           ..email = u['email']
           ..role = u['employee_role']
-          ..phoneNumber = u['phone_no'])
+          ..phoneNumber = u['phone_no']
+          ..latitude = u['latitude'] ?? null
+          ..longitude = u['longitude'] ?? null)
         .toList();
   }
 }

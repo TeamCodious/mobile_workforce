@@ -11,8 +11,7 @@ class SettingsPage extends HookWidget {
     logout() async {
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.remove('token');
-      CurrentUserId.updateId('');
-      CurrentUserId.updateRole('');
+      CurrentUserId.update('', '');
       Navigator.push(context,
           MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
     }

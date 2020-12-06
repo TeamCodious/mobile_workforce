@@ -5,15 +5,10 @@ class CurrentUserId {
   static String id = '';
   static String role = '';
 
-  static Future<void> updateId(String userid) async {
+  static Future<void> update(String userid, String _role) async {
     id = userid;
+    role = _role;
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString(Global.USER_ID_KEY, userid);
-  }
-
-  static Future<void> updateRole(String userRole) async {
-    role = userRole;
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(Global.USER_ROLE, userRole);
   }
 }

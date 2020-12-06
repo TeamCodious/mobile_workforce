@@ -28,8 +28,7 @@ class MainFrame extends HookWidget {
       Map<String, String> headers = {'tokenKey': token};
       Response response = await get(url, headers: headers);
       Map<String, dynamic> data = jsonDecode(response.body);
-      CurrentUserId.updateId(data['id']);
-      CurrentUserId.updateRole(data['employee_role']);
+      CurrentUserId.update(data['id'], data['employee_role']);
     }
     return token;
   }

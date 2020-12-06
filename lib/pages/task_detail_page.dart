@@ -566,11 +566,13 @@ class TaskDetailPage extends HookWidget {
                               ),
                             ),
                             expanded: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
                                   margin: EdgeInsets.symmetric(vertical: 10),
+                                  padding: EdgeInsets.symmetric(horizontal: 5),
                                   child: Text(
-                                    'Junction 8, 8 miles, Kyaik Waing Pagoda Rd, Yangon',
+                                    task.location,
                                     style: TextStyle(
                                       fontSize: 15,
                                     ),
@@ -588,15 +590,15 @@ class TaskDetailPage extends HookWidget {
                                         mapController.complete(controller),
                                     mapType: MapType.normal,
                                     initialCameraPosition: CameraPosition(
-                                      target: coordinate,
+                                      target: LatLng(task.latitude, task.longitude),
                                       zoom: 15,
                                     ),
                                     markers: List.of([
                                       Marker(
                                         markerId: MarkerId(
-                                          coordinate.toString(),
+                                          task.id,
                                         ),
-                                        position: coordinate,
+                                        position: LatLng(task.latitude, task.longitude),
                                       )
                                     ]).toSet(),
                                     scrollGesturesEnabled: false,
