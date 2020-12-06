@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:http/http.dart';
 import '../models.dart';
 import '../state.dart';
+import './employee_map.dart';
 
 class MapPage extends StatelessWidget {
   const MapPage({Key key}) : super(key: key);
@@ -12,10 +13,8 @@ class MapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Builder(builder: (context) {
       if (CurrentUserId.role == "Manager") {
-        print('manager');
         return ManagerMapPage();
       } else {
-        print('employee');
         return EmployeeMapPage();
       }
     });
@@ -70,6 +69,12 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
                   e.latitude,
                   e.longitude,
                 ),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => EmployeeMap(id: e.id)));
+                },
               )).toSet());
         employees = User.fromJSONArray(response.body).where((element) => element.latitude != null).toList();
         print(markers.length);

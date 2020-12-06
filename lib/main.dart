@@ -33,7 +33,6 @@ class MainFrame extends HookWidget {
     return token;
   }
 
-  StreamSubscription<ConnectivityResult> subscription;
   @override
   Widget build(BuildContext context) {
     Map<int, Color> colorCodes = {
@@ -51,6 +50,7 @@ class MainFrame extends HookWidget {
     MaterialColor customColor = MaterialColor(0xFF1b4783, colorCodes);
     final isOnline = useState(false);
     final hasBackups = useState(false);
+    StreamSubscription<ConnectivityResult> subscription;
     void check() async {
       PermissionStatus permission =
           await LocationPermissions().checkPermissionStatus();
