@@ -92,7 +92,7 @@ class CreateTaskPage extends HookWidget {
       String url = Uri.encodeFull(Global.URL + 'tasks/new');
 
       String body =
-          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": $formattedAssigneeString, "owners": $formattedAdminString, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}, "manager": "${leaderId.value}", "latitude": ${coordinate.value.latitude}, "longitude": ${coordinate.value.longitude}, "location": "${locationNameController.text}, "actual_start_time": 0, "actual_finish_time": 0}';
+          '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": $formattedAssigneeString, "owners": $formattedAdminString, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}, "manager": "${leaderId.value}", "latitude": ${coordinate.value.latitude}, "longitude": ${coordinate.value.longitude}, "location": "${locationNameController.text}", "actual_start_time": 0, "actual_finish_time": 0}';
       print(body);
 
       Response response = await put(url, body: body);
