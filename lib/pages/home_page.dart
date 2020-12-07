@@ -17,7 +17,8 @@ import 'notificaitons_page.dart';
 // import '../global.dart';
 // import 'package:geolocator/geolocator.dart';
 // import 'package:http/http.dart';
-// import '../state.dart';
+import '../state.dart';
+import 'settings_page.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends HookWidget {
@@ -111,7 +112,19 @@ class HomePage extends HookWidget {
                   icon: Icon(Icons.notifications),
                 ),
             ),
-          )
+          ),
+          Tooltip(
+            message: 'Settings',
+            child: ActionButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => SettingsPage()));
+              },
+              icon: Icon(Icons.settings),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: Material(

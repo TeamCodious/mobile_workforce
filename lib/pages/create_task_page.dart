@@ -13,6 +13,12 @@ import 'package:mobile_workforce/pages/coordinate_picker.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
 import 'package:mobile_workforce/state.dart';
 
+import '../global.dart';
+import '../global.dart';
+import '../global.dart';
+import '../global.dart';
+import '../global.dart';
+
 class CreateTaskPage extends HookWidget {
   final mapController = Completer<GoogleMapController>();
 
@@ -96,7 +102,7 @@ class CreateTaskPage extends HookWidget {
           '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": $formattedAssigneeString, "owners": $formattedAdminString, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}, "manager": "${leaderId.value}", "latitude": ${coordinate.value.latitude}, "longitude": ${coordinate.value.longitude}, "location": "${locationNameController.text}", "actual_start_time": 0, "actual_finish_time": 0}';
       print(body);
 
-      Response response = await put(url, body: body);
+      Response response = await put(url, headers: Global.HEADERS, body: body);
       if (response.statusCode == 201) {
         Navigator.push(context,
             MaterialPageRoute(builder: (BuildContext context) => HomePage()));
@@ -109,19 +115,19 @@ class CreateTaskPage extends HookWidget {
       String url = Uri.encodeFull(Global.URL + 'employees');
 
       String body = '{"employees": ${formattedAdminString.toString()}}';
-      return post(url, body: body);
+      return post(url, headers: Global.HEADERS, body: body);
     }
 
     loadLeader() async {
       String url = Uri.encodeFull(Global.URL + 'employees/' + leaderId.value);
-      return get(url);
+      return get(url, headers: Global.HEADERS);
     }
 
     loadAddedAssignees() async {
       String url = Uri.encodeFull(Global.URL + 'employees');
 
       String body = '{"employees": ${formattedAssigneeString.toString()}}';
-      return post(url, body: body);
+      return post(url,headers: Global.HEADERS, body: body);
     }
 
     useEffect(() {
@@ -258,7 +264,7 @@ class CreateTaskPage extends HookWidget {
                               loadManagers() async {
                                 String url = Uri.encodeFull(
                                     Global.URL + 'employees?type=managers');
-                                return get(url);
+                                return get(url, headers: Global.HEADERS);
                               }
 
                               showDialog(
@@ -429,7 +435,7 @@ class CreateTaskPage extends HookWidget {
                                   loadAssignees() async {
                                     String url = Uri.encodeFull(Global.URL +
                                         'employees?type=employees');
-                                    return get(url);
+                                    return get(url, headers: Global.HEADERS);
                                   }
 
                                   showDialog(
@@ -592,7 +598,7 @@ class CreateTaskPage extends HookWidget {
                               loadAssignees() async {
                                 String url = Uri.encodeFull(
                                     Global.URL + 'employees?type=employees');
-                                return get(url);
+                                return get(url, headers: Global.HEADERS);
                               }
 
                               showDialog(

@@ -10,19 +10,19 @@ import '../global.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import '../state.dart';
-import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 class SettingsPage extends HookWidget {
-  Future<void> createActivity(String title) async {
-      String url = Uri.encodeFull(Global.URL + '/activities/new');
-      String body = '{"task": "", "employee": "${CurrentUserId.id}", "title": "$title"}';
-      Response res = await put(url, body: body);
-      if (res.statusCode == 201) {
-        print('done');
-      } else {
-        print("$res");
-      }
-  }
+  // Future<void> createActivity(String title) async {
+  //     String url = Uri.encodeFull(Global.URL + '/activities/new');
+  //     String body = '{"task": "", "employee": "${CurrentUserId.id}", "title": "$title"}';
+  //     Response res = await put(url, headers: Global.HEADERS, body: body);
+  //     if (res.statusCode == 201) {
+  //       print('done');
+  //     } else {
+  //       print("$res");
+  //     }
+  // }
   @override
   Widget build(BuildContext context) {
     final workingState = useState(CurrentUserId.workingState);
@@ -66,9 +66,9 @@ class SettingsPage extends HookWidget {
                             Navigator.of(context).pop();
                           }, child: Text("Later")),
                           FlatButton(onPressed: () async {
-                            Global.setWorking();
-                            createActivity("Started working on ${DateFormat('yyyy-MM-dd, kk:mm a').format(DateTime.now())}");
                             startTracking();
+                            Global.setWorking();
+                            // createActivity("Started working on ${DateFormat('yyyy-MM-dd, kk:mm a').format(DateTime.now())}");
                             workingState.value = 'ON';
                             Navigator.of(context).pop();
                           }, child: Text("Sure"))
@@ -123,8 +123,12 @@ class SettingsPage extends HookWidget {
                                   );
                                   return;
                                 } else {
+                                  SharedPreferences pref = await SharedPreferences.getInstance();
+                                  String id = pref.getString(Global.TIME);
+                                  print("[Minute]: ${dateTime.difference(now).inMinutes}");
+                                  breakTime(id, dateTime.difference(now).inMinutes);
                                   Global.setBreak();
-                                  createActivity("Took a break for ${now.difference(dateTime).inHours} minutes.");
+                                  // createActivity("Took a break for ${now.difference(dateTime).inHours} minutes.");
                                   stopTracking();
                                   workingState.value = 'BREAK';
                                   Navigator.of(context).pop();
@@ -155,8 +159,9 @@ class SettingsPage extends HookWidget {
                                 Navigator.of(context).pop();
                               }, child: Text("Later")),
                               FlatButton(onPressed: () async {
+                                stop();
                                 Global.setFinish();
-                                createActivity('Stopped working at ${DateTime.now().toString()}');
+                                // createActivity('Stopped working at ${DateTime.now().toString()}');
                                 stopTracking();
                                 workingState.value = 'OFF';
                                 Navigator.of(context).pop();
@@ -177,6 +182,31 @@ class SettingsPage extends HookWidget {
     );
   }
 
+  void stop() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String id = pref.getString(Global.TIME);
+    String url = Uri.encodeFull(Global.URL + '/time/stop');
+    String body = '{"id": "$id", "stop_time": ${DateTime.now().toUtc().millisecondsSinceEpoch}}';
+    Response res = await patch(url, headers: Global.HEADERS, body: body);
+    if (res.statusCode == 204) {
+      print('done');
+    } else {
+      print("$res");
+    }
+    pref.remove(Global.TIME);
+  }
+
+  void breakTime(String id, int time) async {
+    String url = Uri.encodeFull(Global.URL + '/time/break');
+    String body = '{"id": "$id", "total_break": $time, "now": ${DateTime.now().toUtc().millisecondsSinceEpoch}}';
+    Response res = await patch(url, headers: Global.HEADERS, body: body);
+    if (res.statusCode == 204) {
+      print('done');
+    } else {
+      print("$res");
+    }
+  }
+
   void stopTracking() async {
     final flag = await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
     if (flag) {
@@ -186,7 +216,26 @@ class SettingsPage extends HookWidget {
     }
   }
 
+  void createTime() async {
+    final id = Uuid().v4();
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Global.TIME, id);
+    String url = Uri.encodeFull(Global.URL + '/time/new');
+    String body = '{"id": "$id", "employee": "${CurrentUserId.id}", "start_time": ${DateTime.now().toUtc().millisecondsSinceEpoch}}';
+    Response res = await put(url, headers: Global.HEADERS, body: body);
+    if (res.statusCode == 201) {
+      print('done');
+    } else {
+      print("$res");
+    }
+  }
+
   void startTracking() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String id = pref.getString(Global.TIME);
+    if (id == null) {
+      createTime();
+    }
     final flag = await AndroidAlarmManager.initialize();
     if (flag) {
       print("[Info]: System starts tracking.");
@@ -243,7 +292,7 @@ class SettingsPage extends HookWidget {
     print(body);
     print(CurrentUserId.id);
     try {
-      Response response = await put(url, body: body);
+      Response response = await put(url, headers: Global.HEADERS, body: body);
       if (response.statusCode != 201) {
         throw "Error: $response";
       }

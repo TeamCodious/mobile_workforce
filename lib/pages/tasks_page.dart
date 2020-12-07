@@ -8,6 +8,8 @@ import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/create_task_page.dart';
 import 'package:mobile_workforce/state.dart';
 
+import '../global.dart';
+
 class TasksPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,7 +19,7 @@ class TasksPage extends HookWidget {
     loadTasks() async {
       String url = Uri.encodeFull(
           Global.URL + 'employees/' + CurrentUserId.id + '/tasks?type=all');
-      Response response = await get(url);
+      Response response = await get(url, headers: Global.HEADERS);
       return Task.fromJSONArray(response.body);
     }
 

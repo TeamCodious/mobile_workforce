@@ -21,7 +21,7 @@ class LoginPage extends HookWidget {
       String body =
           '{"email": "' + _email + '", "password": "' + _password + '"}';
       String url = Uri.encodeFull(Global.URL + 'login?deviceToken=$deviceToken');
-      Response response = await post(url, body: body);
+      Response response = await post(url, headers: Global.HEADERS, body: body);
       Map<String, dynamic> res = json.decode(response.body);
       CurrentUserId.update(res['userId'], res['employee_role']);
       SharedPreferences pref = await SharedPreferences.getInstance();

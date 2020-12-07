@@ -12,6 +12,8 @@ import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:location_permissions/location_permissions.dart';
 
+import 'global.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MainFrame());
@@ -23,7 +25,7 @@ class MainFrame extends HookWidget {
     String token = pref.getString('token') ?? '';
     if (token != '') {
       String url = Uri.encodeFull(Global.URL + 'me/');
-      Map<String, String> headers = {'tokenKey': token};
+      Map<String, String> headers = {'tokenKey': token, 'x-api-key': Global.API_KEY};
       Response response = await get(url, headers: headers);
       Map<String, dynamic> data = jsonDecode(response.body);
       CurrentUserId.update(data['id'], data['employee_role']);
@@ -72,7 +74,7 @@ class MainFrame extends HookWidget {
         String body =
             '{"time": ${location.time}, "latitude": ${location.latitude}, "longitude": ${location.longitude}, "employee": "$userID"}';
         try {
-          Response response = await put(url, body: body);
+          Response response = await put(url, headers: Global.HEADERS, body: body);
           if (response.statusCode == 201) {
             await SQLite.deleteLocation(location.id);
             print(body);

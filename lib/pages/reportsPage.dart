@@ -20,7 +20,7 @@ class ReportsPage extends HookWidget {
           CurrentUserId.id +
           '/reports?type=' +
           type);
-      Response res = await get(url);
+      Response res = await get(url, headers: Global.HEADERS);
       List<Report> reports = Report.fromJSONArray(res.body);
       List<Report> confirmedReports =
           reports.where((r) => r.confirmed).toList();
