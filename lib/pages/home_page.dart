@@ -7,13 +7,13 @@ import 'package:mobile_workforce/pages/messages_page.dart';
 import 'package:mobile_workforce/pages/reportsPage.dart';
 import 'package:mobile_workforce/pages/settings_page.dart';
 import 'package:mobile_workforce/pages/tasks_page.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:android_alarm_manager/android_alarm_manager.dart';
-import '../global.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart';
-import '../state.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:android_alarm_manager/android_alarm_manager.dart';
+// import '../global.dart';
+// import 'package:geolocator/geolocator.dart';
+// import 'package:http/http.dart';
+// import '../state.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends HookWidget {
   final _tabs = <String>['Tasks', 'Map', 'Messages', 'Reports', 'Employees'];
@@ -23,12 +23,12 @@ class HomePage extends HookWidget {
     final tabIndex = useState(0);
     final tabController = useTabController(initialLength: 5);
 
-    useEffect(() {
-      // WARNING:
-      // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app.
-      // startTracking();
-      return () {};
-    }, []);
+    // useEffect(() {
+    //   // WARNING:
+    //   // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app.
+    //   // startTracking();
+    //   return () {};
+    // }, []);
 
     return Scaffold(
       appBar: AppBar(
@@ -106,66 +106,66 @@ class HomePage extends HookWidget {
     );
   }
 
-  void startTracking() async {
-    await AndroidAlarmManager.periodic(
-        Duration(seconds: 5), Global.BACKGROUND_TASK_ID, callback);
-  }
+  // void startTracking() async {
+  //   await AndroidAlarmManager.periodic(
+  //       Duration(seconds: 5), Global.BACKGROUND_TASK_ID, callback);
+  // }
 
-  static Future<void> callback() async {
-    print("Alarm fired");
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    bool result = await isInternet();
-    print(position);
-    // WARNING:
-    // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app.
-    if (result == true) {
-      // await save(position);
-    } else {
-      // await SQLite.insertPosition(position);
-    }
-    //debug
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        new FlutterLocalNotificationsPlugin();
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  // static Future<void> callback() async {
+  //   print("Alarm fired");
+  //   Position position = await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.high);
+  //   bool result = await isInternet();
+  //   print(position);
+  //   // WARNING:
+  //   // This function will be run at the background even if app is terminated. After testing this function, don't forget to uninstall the app.
+  //   if (result == true) {
+  //     // await save(position);
+  //   } else {
+  //     // await SQLite.insertPosition(position);
+  //   }
+  //   //debug
+  //   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  //       new FlutterLocalNotificationsPlugin();
+  //   var initializationSettingsAndroid =
+  //       AndroidInitializationSettings('@mipmap/ic_launcher');
+  //   var initializationSettings =
+  //       InitializationSettings(android: initializationSettingsAndroid);
+  //   flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'location_update',
-        'Location Updates',
-        'You will receive location updates here',
-        importance: Importance.max,
-        priority: Priority.high);
-    var platformChannelSpecifics =
-        new NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, 'PUT success $result',
-        "${position.longitude} ${position.latitude}", platformChannelSpecifics);
-  }
+  //   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+  //       'location_update',
+  //       'Location Updates',
+  //       'You will receive location updates here',
+  //       importance: Importance.max,
+  //       priority: Priority.high);
+  //   var platformChannelSpecifics =
+  //       new NotificationDetails(android: androidPlatformChannelSpecifics);
+  //   await flutterLocalNotificationsPlugin.show(0, 'PUT success $result',
+  //       "${position.longitude} ${position.latitude}", platformChannelSpecifics);
+  // }
 
-  static Future<void> save(Position position) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    String userID = pref.getString(Global.USER_ID_KEY) ?? '';
-    if (userID == '') {
-      await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
-      return;
-    }
-    String url = Uri.encodeFull(Global.URL + 'locations/new');
+  // static Future<void> save(Position position) async {
+  //   SharedPreferences pref = await SharedPreferences.getInstance();
+  //   String userID = pref.getString(Global.USER_ID_KEY) ?? '';
+  //   if (userID == '') {
+  //     await AndroidAlarmManager.cancel(Global.BACKGROUND_TASK_ID);
+  //     return;
+  //   }
+  //   String url = Uri.encodeFull(Global.URL + 'locations/new');
 
-    String body =
-        '{"time": ${DateTime.now().toUtc().millisecondsSinceEpoch}, "latitude": ${position.latitude}, "longitude": ${position.longitude}, "employee": "$userID"}';
-    print(body);
-    print(CurrentUserId.id);
-    try {
-      Response response = await put(url, body: body);
-      if (response.statusCode != 201) {
-        throw "Error: $response";
-      }
-    } catch (err) {
-      print(err);
-      await SQLite.insertPosition(position);
-    }
-  }
+  //   String body =
+  //       '{"time": ${DateTime.now().toUtc().millisecondsSinceEpoch}, "latitude": ${position.latitude}, "longitude": ${position.longitude}, "employee": "$userID"}';
+  //   print(body);
+  //   print(CurrentUserId.id);
+  //   try {
+  //     Response response = await put(url, body: body);
+  //     if (response.statusCode != 201) {
+  //       throw "Error: $response";
+  //     }
+  //   } catch (err) {
+  //     print(err);
+  //     await SQLite.insertPosition(position);
+  //   }
+  // }
 }

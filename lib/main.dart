@@ -10,12 +10,10 @@ import 'package:mobile_workforce/pages/home_page.dart';
 import 'package:mobile_workforce/pages/login_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:location_permissions/location_permissions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AndroidAlarmManager.initialize();
   runApp(MainFrame());
 }
 
@@ -89,6 +87,7 @@ class MainFrame extends HookWidget {
     }
 
     useEffect(() {
+      CurrentUserId.getWorkingState();
       check();
       return () {};
     });

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:mobile_workforce/components/action_button.dart';
 import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
+import 'package:mobile_workforce/state.dart';
 
 class ReportDetailPage extends HookWidget {
   final String id;
@@ -88,7 +89,7 @@ class ReportDetailPage extends HookWidget {
               String url = Uri.encodeFull(Global.URL +
                   'reports/' +
                   snapshot.data['report'].id +
-                  '/confirm');
+                  '/confirm?confirmer=${CurrentUserId.id}');
               String body = '{"isConfirmed": true}';
               Response res = await patch(url, body: body);
               if (res.statusCode == 204) {
