@@ -59,13 +59,14 @@ class HomePage extends HookWidget {
         },
         onLaunch: (message) async {
           print("[Info]: Notification is received while app is on launch.");
-          hasNoti.value = true;
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          pref.setBool(Global.NOTI_KEY, true);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => NotificaitonPage()));
         }
       );
       return () {};
-    });
+    }, []);
 
     // useEffect(() {
     //   // WARNING:
