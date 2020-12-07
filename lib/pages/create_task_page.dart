@@ -89,7 +89,8 @@ class CreateTaskPage extends HookWidget {
         assigneeIds.value.map((e) => '"' + e + '"').toList().toString();
 
     _save() async {
-      String url = Uri.encodeFull(Global.URL + 'tasks/new');
+      String url =
+          Uri.encodeFull(Global.URL + 'tasks/new?creator=' + CurrentUserId.id);
 
       String body =
           '{"title": "${titleController.text}", "description": "${descriptionController.text}", "assignees": $formattedAssigneeString, "owners": $formattedAdminString, "task_state": "Planned", "start_time": ${startDate.value.millisecondsSinceEpoch}, "due_time": ${dueDate.value.millisecondsSinceEpoch}, "manager": "${leaderId.value}", "latitude": ${coordinate.value.latitude}, "longitude": ${coordinate.value.longitude}, "location": "${locationNameController.text}", "actual_start_time": 0, "actual_finish_time": 0}';
@@ -100,8 +101,6 @@ class CreateTaskPage extends HookWidget {
         Navigator.push(context,
             MaterialPageRoute(builder: (BuildContext context) => HomePage()));
       } else {
-        print(response.statusCode);
-        print(response.body);
         Navigator.pop(context);
       }
     }

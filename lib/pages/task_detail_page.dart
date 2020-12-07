@@ -13,6 +13,7 @@ import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/pages/create_report_page.dart';
 import 'package:mobile_workforce/state.dart';
+import 'package:mobile_workforce/components/activity_card.dart';
 
 class TaskDetailPage extends HookWidget {
   final taskId;
@@ -63,11 +64,26 @@ class TaskDetailPage extends HookWidget {
               final dueTime = DateTime.fromMillisecondsSinceEpoch(task.dueTime);
               final formattedDueTime =
                   '${DateFormat.yMMMMd('en_US').format(dueTime)} ${DateFormat('jm').format(dueTime)}';
+              final actualStartTime =
+                  DateTime.fromMillisecondsSinceEpoch(task.startTime);
+              final formattedActualStartTime =
+                  '${DateFormat.yMMMMd('en_US').format(actualStartTime)} ${DateFormat('jm').format(actualStartTime)}';
+              final actualFinishTime =
+                  DateTime.fromMillisecondsSinceEpoch(task.startTime);
+              final formattedActualFinishTime =
+                  '${DateFormat.yMMMMd('en_US').format(actualFinishTime)} ${DateFormat('jm').format(actualFinishTime)}';
+
               String duration;
 
               loadManger() async {
                 String url =
                     Uri.encodeFull(Global.URL + 'employees/' + task.manager);
+                return get(url);
+              }
+
+              loadActivites() async {
+                String url = Uri.encodeFull(
+                    Global.URL + 'tasks/' + taskId + '/activities');
                 return get(url);
               }
 
@@ -494,7 +510,7 @@ class TaskDetailPage extends HookWidget {
                                   padding:
                                       const EdgeInsets.only(top: 5, bottom: 5),
                                   child: Text(
-                                    'Start time',
+                                    'Target start time',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
@@ -513,7 +529,7 @@ class TaskDetailPage extends HookWidget {
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 5),
                                   child: Text(
-                                    'Due time',
+                                    'Target due time',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
@@ -529,6 +545,58 @@ class TaskDetailPage extends HookWidget {
                                     ),
                                   ),
                                 ),
+                                task.taskState == 'Completed' ||
+                                        task.taskState == 'Ongoing'
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 5, bottom: 5),
+                                        child: Text(
+                                          'Actual start time',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
+                                task.taskState == 'Completed' ||
+                                        task.taskState == 'Ongoing'
+                                    ? Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: Text(
+                                          formattedActualStartTime,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
+                                task.taskState == 'Completed'
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 5, bottom: 5),
+                                        child: Text(
+                                          'Actual finish time',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
+                                task.taskState == 'Completed'
+                                    ? Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 10),
+                                        child: Text(
+                                          formattedActualFinishTime,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
                               ],
                             ),
                           ),
@@ -649,36 +717,47 @@ class TaskDetailPage extends HookWidget {
                                 ),
                               ),
                             ),
-                            expanded: Column(
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.symmetric(vertical: 10),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'John created this task',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      Text(
-                                        '5 min ago',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            expanded: FutureBuilder(
+                              future: loadActivites(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot snapshot) {
+                                if (snapshot.hasError) {
+                                  print(snapshot.error);
+                                  return Scaffold(
+                                    body: Center(
+                                      child: Text('Error'),
+                                    ),
+                                  );
+                                } else if (!snapshot.hasData) {
+                                  return Scaffold(
+                                    body: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                } else {
+                                  List<Activity> activities =
+                                      Activity.fromJSONArray(
+                                          snapshot.data.body);
+                                  return Container(
+                                    child: Column(
+                                      children: activities
+                                          .map((a) => ActivityCard(
+                                                title: a.title,
+                                                taskId: a.taskId,
+                                                employeeId: a.creatorId,
+                                                createdTime: a.createdTime,
+                                                type: 'task',
+                                              ))
+                                          .toList(),
+                                    ),
+                                  );
+                                }
+                              },
                             ),
                           ),
                         ),
                       ),
                     ),
-                    Spacer(),
                     task.manager == CurrentUserId.id
                         ? task.taskState == 'Ongoing'
                             ? Container(

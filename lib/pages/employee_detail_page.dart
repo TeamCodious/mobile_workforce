@@ -4,6 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:http/http.dart';
 import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
+import 'package:mobile_workforce/components/activity_card.dart';
+import 'package:mobile_workforce/pages/login_page.dart';
+import 'package:mobile_workforce/state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmployeeDetailPage extends HookWidget {
   final String id;
@@ -25,6 +29,7 @@ class EmployeeDetailPage extends HookWidget {
         tasks.where((t) => t.taskState == 'Planned').length.toString();
     String completedTasks =
         tasks.where((t) => t.taskState == 'Completed').length.toString();
+
     Map<String, dynamic> data = {
       'user': user,
       'ongoingTasks': ongoingTasks,
@@ -37,10 +42,19 @@ class EmployeeDetailPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    logout() async {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.remove('token');
+      CurrentUserId.update('', '');
+      Navigator.push(context,
+          MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
+    }
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Employee Detail'),
+        title:
+            id == CurrentUserId.id ? Text('Profile') : Text('Employee Detail'),
       ),
       body: FutureBuilder(
         future: loadUser(),
@@ -59,6 +73,14 @@ class EmployeeDetailPage extends HookWidget {
               ),
             );
           } else {
+            loadActivities() async {
+              String url = Uri.encodeFull(Global.URL +
+                  'employees/' +
+                  snapshot.data['user'].id +
+                  '/activities');
+              return get(url);
+            }
+
             return SingleChildScrollView(
               child: Container(
                 margin: EdgeInsets.all(10),
@@ -96,10 +118,13 @@ class EmployeeDetailPage extends HookWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
-                                snapshot.data['user'].role,
-                                style: TextStyle(
-                                  fontStyle: FontStyle.italic,
+                              Container(
+                                margin: EdgeInsets.symmetric(vertical: 5),
+                                child: Text(
+                                  snapshot.data['user'].role,
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                  ),
                                 ),
                               ),
                               Text('ABC Company Limited'),
@@ -108,6 +133,16 @@ class EmployeeDetailPage extends HookWidget {
                         ],
                       ),
                     ),
+                    id == CurrentUserId.id
+                        ? Container(
+                            margin: EdgeInsets.all(5),
+                            width: double.maxFinite,
+                            child: RaisedButton(
+                              onPressed: logout,
+                              child: Text('Logout'),
+                            ),
+                          )
+                        : Container(),
                     Container(
                       width: double.maxFinite,
                       child: Card(
@@ -192,84 +227,89 @@ class EmployeeDetailPage extends HookWidget {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 5),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
                                   children: [
-                                    Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Column(
-                                          children: [
-                                            Container(
-                                              margin:
-                                                  EdgeInsets.only(bottom: 10),
-                                              child: Text(
-                                                snapshot.data['plannedTasks'],
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              'Planned Tasks',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Column(
-                                          children: [
-                                            Container(
-                                              margin:
-                                                  EdgeInsets.only(bottom: 10),
-                                              child: Text(
-                                                snapshot.data['ongoingTasks'],
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              'Ongoing Tasks',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Card(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Column(
-                                          children: [
-                                            Container(
-                                              margin:
-                                                  EdgeInsets.only(bottom: 10),
-                                              child: Text(
-                                                snapshot.data['completedTasks'],
-                                                style: TextStyle(
+                                    Expanded(
+                                      child: Card(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                margin:
+                                                    EdgeInsets.only(bottom: 10),
+                                                child: Text(
+                                                  snapshot.data['plannedTasks'],
+                                                  style: TextStyle(
                                                     fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            Text(
-                                              'Completed Tasks',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                              Text(
+                                                'Planned',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Card(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                margin:
+                                                    EdgeInsets.only(bottom: 10),
+                                                child: Text(
+                                                  snapshot.data['ongoingTasks'],
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                              Text(
+                                                'Ongoing',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Card(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                margin:
+                                                    EdgeInsets.only(bottom: 10),
+                                                child: Text(
+                                                  snapshot
+                                                      .data['completedTasks'],
+                                                  style: TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                              Text(
+                                                'Completed',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     )
@@ -367,30 +407,40 @@ class EmployeeDetailPage extends HookWidget {
                                 ),
                               ),
                             ),
-                            expanded: Column(
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.symmetric(vertical: 10),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'John created this task',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      Text(
-                                        '5 min ago',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                            expanded: FutureBuilder(
+                              future: loadActivities(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot snapshot) {
+                                if (snapshot.hasError) {
+                                  print(snapshot.error);
+                                  return Scaffold(
+                                    body: Center(
+                                      child: Text('Error'),
+                                    ),
+                                  );
+                                } else if (!snapshot.hasData) {
+                                  return Scaffold(
+                                    body: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                } else {
+                                  List<Activity> activities =
+                                      Activity.fromJSONArray(
+                                          snapshot.data.body);
+                                  return Column(
+                                    children: activities
+                                        .map((a) => ActivityCard(
+                                              title: a.title,
+                                              taskId: a.taskId,
+                                              employeeId: a.creatorId,
+                                              createdTime: a.createdTime,
+                                              type: 'employee',
+                                            ))
+                                        .toList(),
+                                  );
+                                }
+                              },
                             ),
                           ),
                         ),

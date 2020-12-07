@@ -11,7 +11,7 @@ import 'package:mobile_workforce/state.dart';
 class EmployeesPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
-    final tabIndex = useState(1);
+    final tabIndex = useState(0);
     final tabController = useTabController(initialLength: 2);
 
     loadManagersAndEmployees() async {

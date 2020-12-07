@@ -132,6 +132,7 @@ class Report {
   String task;
   String title;
   String text;
+  String confirmerId;
   int createdTime;
   int confirmedTime;
 
@@ -146,7 +147,8 @@ class Report {
       ..reporter = data['reporter']
       ..confirmed = data['confirmed']
       ..createdTime = data['createdAt']
-      ..confirmedTime = data['confirmedTime'];
+      ..confirmedTime = data['confirmedTime']
+      ..confirmerId = data['confirmer'];
   }
 
   static List<Report> fromJSONArray(String jsonString) {
@@ -161,7 +163,38 @@ class Report {
           ..reporter = r['reporter']
           ..confirmed = r['confirmed']
           ..createdTime = r['createdAt']
-          ..confirmedTime = r['confirmedTime'])
+          ..confirmedTime = r['confirmedTime']
+          ..confirmerId = r['confirmer'])
+        .toList();
+  }
+}
+
+class Activity {
+  String id;
+  String creatorId;
+  String taskId;
+  String title;
+  int createdTime;
+
+  static Activity fromJSON(String jsonString) {
+    final Map<String, dynamic> data = jsonDecode(jsonString);
+    return Activity()
+      ..id = data['id']
+      ..title = data['title']
+      ..creatorId = data['employee']
+      ..taskId = data['task']
+      ..createdTime = data['createdAt'];
+  }
+
+  static List<Activity> fromJSONArray(String jsonString) {
+    final Iterable<dynamic> data = jsonDecode(jsonString);
+    return data
+        .map((r) => Activity()
+          ..id = r['id']
+          ..title = r['title']
+          ..creatorId = r['employee']
+          ..taskId = r['task']
+          ..createdTime = r['createdAt'])
         .toList();
   }
 }
