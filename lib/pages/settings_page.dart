@@ -112,7 +112,7 @@ class SettingsPage extends HookWidget {
                                     context: context,
                                     builder: (context) {
                                       return AlertDialog(
-                                        title: Text('You are not allowed to take a break.'),
+                                        title: Text('You are not allowed to take a break longer than 30 minute.'),
                                         actions: [
                                           FlatButton(onPressed: () {
                                             Navigator.of(context).pop();
@@ -124,7 +124,7 @@ class SettingsPage extends HookWidget {
                                   return;
                                 } else {
                                   Global.setBreak();
-                                  createActivity("Took a break for ${dateTime.minute} minutes.");
+                                  createActivity("Took a break for ${now.difference(dateTime).inHours} minutes.");
                                   stopTracking();
                                   workingState.value = 'BREAK';
                                   Navigator.of(context).pop();
