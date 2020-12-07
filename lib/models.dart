@@ -198,3 +198,27 @@ class Activity {
         .toList();
   }
 }
+
+class Noti {
+  String id;
+  String title;
+  String description;
+
+  static Noti fromJSON(String jsonString) {
+    final Map<String, dynamic> data = jsonDecode(jsonString);
+    return Noti()
+      ..id = data['id']
+      ..title = data['title']
+      ..description = data['description'];
+  }
+
+  static List<Noti> fromJSONArray(String jsonString) {
+    final Iterable<dynamic> data = jsonDecode(jsonString);
+    return data
+        .map((d) => Noti()
+          ..id = d['id']
+          ..title = d['title']
+          ..description = d['description'])
+        .toList();
+  }
+}

@@ -17,6 +17,7 @@ class LoginPage extends HookWidget {
 
     login() async {
       String deviceToken = await FirebaseMessaging().getToken();
+      print(deviceToken);
       String body =
           '{"email": "' + _email + '", "password": "' + _password + '"}';
       String url = Uri.encodeFull(Global.URL + 'login?deviceToken=$deviceToken');

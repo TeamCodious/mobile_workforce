@@ -1,17 +1,36 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile_workforce/models.dart';
+import 'package:mobile_workforce/state.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Global {
   static const BACKGROUND_TASK_ID = 2000;
   static const USER_ID_KEY = "com.example.userID";
   static const USER_ROLE = "com.example.role";
+  static const WORKING_STATE = "com.example.workingState";
   static const URL =
       "https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/";
+  static const NOTI_KEY = "com.example.noti";
+  static void setWorking() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Global.WORKING_STATE, 'ON');
+    CurrentUserId.updateWorkingState('ON');
+  }
+  static void setBreak() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Global.WORKING_STATE, 'BREAK');
+    CurrentUserId.updateWorkingState('BREAK');
+  }
+  static void setFinish() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Global.WORKING_STATE, 'OFF');
+    CurrentUserId.updateWorkingState('OFF');
+  }
 }
 
 Future<bool> isInternet() async {
