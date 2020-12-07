@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:mobile_workforce/components/action_button.dart';
+import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/pages/employees_page.dart';
 import 'package:mobile_workforce/pages/map_page.dart';
 import 'package:mobile_workforce/pages/messages_page.dart';
 import 'package:mobile_workforce/pages/reportsPage.dart';
 import 'package:mobile_workforce/pages/settings_page.dart';
 import 'package:mobile_workforce/pages/tasks_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:badges/badges.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'notificaitons_page.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 // import 'package:android_alarm_manager/android_alarm_manager.dart';
 // import '../global.dart';
@@ -22,6 +27,45 @@ class HomePage extends HookWidget {
   Widget build(BuildContext context) {
     final tabIndex = useState(0);
     final tabController = useTabController(initialLength: 5);
+    FirebaseMessaging messaging = FirebaseMessaging();
+    final hasNoti = useState(false);
+
+    _getNoti() async {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      hasNoti.value = pref.getBool(Global.NOTI_KEY) ?? false;
+    }
+
+    _setFalse() async {
+        hasNoti.value = false;
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.setBool(Global.NOTI_KEY, false);
+    }
+
+    useEffect(() {
+      _getNoti();
+      messaging.configure(
+        onMessage: (Map<String, dynamic> message) async {
+          print("[Info]: Notification is received while app is on foreground.");
+          hasNoti.value = true;
+          SharedPreferences pref = await SharedPreferences.getInstance();
+          pref.setBool(Global.NOTI_KEY, true);
+        },
+        onResume: (message) async {
+          print("[Info]: Notification is received.");
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => NotificaitonPage()));
+        },
+        onLaunch: (message) async {
+          print("[Info]: Notification is received while app is on launch.");
+          hasNoti.value = true;
+          SharedPreferences pref = await SharedPreferences.getInstance();
+          pref.setBool(Global.NOTI_KEY, true);
+        }
+      );
+      return () {};
+    });
 
     // useEffect(() {
     //   // WARNING:
@@ -47,11 +91,22 @@ class HomePage extends HookWidget {
           ),
         ),
         actions: [
-          Tooltip(
-            message: 'Notifications',
-            child: ActionButton(
-              onPressed: () {},
-              icon: Icon(Icons.notifications),
+          Badge( 
+              position: BadgePosition.topEnd(top: 10, end: 10),
+              badgeContent: null,
+              showBadge: hasNoti.value,
+              child: Tooltip(
+                message: 'Notifications',
+                child: ActionButton(
+                  onPressed: () {
+                    _setFalse();
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) => NotificaitonPage()));
+                  },
+                  icon: Icon(Icons.notifications),
+                ),
             ),
           )
         ],

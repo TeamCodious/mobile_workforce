@@ -15,6 +15,7 @@ class Global {
   static const WORKING_STATE = "com.example.workingState";
   static const URL =
       "https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/";
+  static const NOTI_KEY = "com.example.noti";
   static void setWorking() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString(Global.WORKING_STATE, 'ON');
