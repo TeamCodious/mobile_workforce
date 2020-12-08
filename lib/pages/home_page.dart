@@ -113,18 +113,6 @@ class HomePage extends HookWidget {
                 ),
             ),
           ),
-          Tooltip(
-            message: 'Settings',
-            child: ActionButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => SettingsPage()));
-              },
-              icon: Icon(Icons.settings),
-            ),
-          ),
         ],
       ),
       bottomNavigationBar: Material(

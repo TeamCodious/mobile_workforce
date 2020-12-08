@@ -8,10 +8,11 @@ import 'package:mobile_workforce/components/activity_card.dart';
 import 'package:mobile_workforce/pages/login_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:charts_flutter/flutter.dart' as charts;
 import '../global.dart';
-import '../global.dart';
-import '../global.dart';
+import '../state.dart';
+import 'settings_page.dart';
+import 'package:intl/intl.dart';
 
 class EmployeeDetailPage extends HookWidget {
   final String id;
@@ -34,12 +35,25 @@ class EmployeeDetailPage extends HookWidget {
     String completedTasks =
         tasks.where((t) => t.taskState == 'Completed').length.toString();
 
+    String url3 = Uri.encodeFull(Global.URL +
+        'employees/' +
+        id +
+        '/times');
+    Response res3 = await get(url3, headers: Global.HEADERS);
+    List<Time> times = Time.fromJSONArray(res3.body);
+    times.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    charts.Series<dynamic, String> totalTime = new charts.Series<dynamic, String>(id: 'total_time', data: times, domainFn: (time, _) => '${DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(time.createdAt))}', measureFn: (time, _) => time.totalTime);
+    charts.Series<dynamic, String> totalBreak = new charts.Series<dynamic, String>(id: 'total_break', data: times, domainFn: (time, _) => '${DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(time.createdAt))}', measureFn: (time, _) => time.totalBreak);
+    List<charts.Series<dynamic, String>> seriesList = [totalBreak, totalTime];
+
     Map<String, dynamic> data = {
       'user': user,
       'ongoingTasks': ongoingTasks,
       'plannedTasks': plannedTasks,
       'completedTasks': completedTasks,
       'tasks': tasks.length.toString(),
+      'times': times,
+      'seriesList': seriesList,
     };
     return data;
   }
@@ -49,6 +63,7 @@ class EmployeeDetailPage extends HookWidget {
     logout() async {
       SharedPreferences pref = await SharedPreferences.getInstance();
       pref.remove('token');
+      pref.remove(Global.NOTI_KEY);
       CurrentUserId.update('', '');
       Navigator.push(context,
           MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
@@ -84,7 +99,6 @@ class EmployeeDetailPage extends HookWidget {
                   '/activities');
               return get(url, headers: Global.HEADERS);
             }
-
             return SingleChildScrollView(
               child: Container(
                 margin: EdgeInsets.all(10),
@@ -138,15 +152,17 @@ class EmployeeDetailPage extends HookWidget {
                       ),
                     ),
                     id == CurrentUserId.id
-                        ? Container(
-                            margin: EdgeInsets.all(5),
-                            width: double.maxFinite,
-                            child: RaisedButton(
-                              onPressed: logout,
-                              child: Text('Logout'),
-                            ),
-                          )
-                        : Container(),
+                    ? SettingsPage() : Container(),
+                    id == CurrentUserId.id
+                    ? Container(
+                        margin: EdgeInsets.all(5),
+                        width: double.maxFinite,
+                        child: RaisedButton(
+                          onPressed: logout,
+                          child: Text('Logout'),
+                        ),
+                      )
+                    : Container(),
                     Container(
                       width: double.maxFinite,
                       child: Card(
@@ -394,6 +410,38 @@ class EmployeeDetailPage extends HookWidget {
                           ),
                         ),
                       ),
+                    ),
+                    Container(
+                      width: double.maxFinite,
+                      child: Card( 
+                          child: Padding(  
+                            padding: EdgeInsets.all(5),
+                            child: Column(  
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 15),
+                                child: Text(
+                                  'Timeline',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.only(bottom: 15),
+                                height: 250,
+                                child: charts.BarChart(  
+                                  snapshot.data['seriesList'],
+                                  animate: false,
+                                  barGroupingType: charts.BarGroupingType.stacked,
+                                ),
+                              )
+                            ],
+                          ),
+                          )
+                        ),
                     ),
                     Container(
                       margin: EdgeInsets.only(bottom: 15),

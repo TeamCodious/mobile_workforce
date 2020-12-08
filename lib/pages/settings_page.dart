@@ -26,162 +26,147 @@ class SettingsPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final workingState = useState(CurrentUserId.workingState);
-    logout() async {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-      pref.remove('token');
-      CurrentUserId.update('', '');
-      Navigator.push(context,
-          MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
-    }
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('Settings'),
-        actions: [
-          Tooltip(
-            message: 'Log out',
-            child: ActionButton(
-              onPressed: logout,
-              icon: Icon(Icons.logout),
-            ),
-          ),
-        ],
-      ),
-      body: Builder(   
-        builder: (context) {
-          if (workingState.value == 'OFF' || workingState.value == 'BREAK') {
-            return Container(  
-              margin: EdgeInsets.all(5),
-              height: 40,
-              width: double.infinity,
-              child: RaisedButton(
-                onPressed: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text("Are you sure to get to your work?"),
-                        actions: [
-                          FlatButton(onPressed: () {
-                            Navigator.of(context).pop();
-                          }, child: Text("Later")),
-                          FlatButton(onPressed: () async {
+    // logout() async {
+    //   SharedPreferences pref = await SharedPreferences.getInstance();
+    //   pref.remove('token');
+    //   CurrentUserId.update('', '');
+    //   Navigator.push(context,
+    //       MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
+    // }
+    return Builder(   
+      builder: (context) {
+        if (workingState.value == 'OFF' || workingState.value == 'BREAK') {
+          return Container(  
+            margin: EdgeInsets.all(5),
+            height: 40,
+            width: double.infinity,
+            child: RaisedButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Are you sure to get to your work?"),
+                      actions: [
+                        FlatButton(onPressed: () {
+                          Navigator.of(context).pop();
+                        }, child: Text("Later")),
+                        FlatButton(onPressed: () async {
 
-                            startTracking();
-                            Global.setWorking();
-                            // createActivity("Started working on ${DateFormat('yyyy-MM-dd, kk:mm a').format(DateTime.now())}");
-                            workingState.value = 'ON';
-                            Navigator.of(context).pop();
-                          }, child: Text("Sure"))
-                        ],
-                      );
-                    }
-                  );
-                },
-                child: Text("Start your work"),
-              ),
-            );
-          } else {
-            return Column(
-              children: [
-                Container(  
-                  margin: EdgeInsets.all(5),
-                  height: 40,
-                  width: double.infinity,
-                  child: RaisedButton(
-                    onPressed: () async {
-                      await showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text("Are you sure to take a break for a while?"),
-                            actions: [
-                              FlatButton(onPressed: () {
+                          startTracking();
+                          Global.setWorking();
+                          // createActivity("Started working on ${DateFormat('yyyy-MM-dd, kk:mm a').format(DateTime.now())}");
+                          workingState.value = 'ON';
+                          Navigator.of(context).pop();
+                        }, child: Text("Sure"))
+                      ],
+                    );
+                  }
+                );
+              },
+              child: Text("Start your work"),
+            ),
+          );
+        } else {
+          return Column(
+            children: [
+              Container(  
+                margin: EdgeInsets.all(5),
+                height: 40,
+                width: double.infinity,
+                child: RaisedButton(
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Are you sure to take a break for a while?"),
+                          actions: [
+                            FlatButton(onPressed: () {
+                              Navigator.of(context).pop();
+                            }, child: Text("Cancel")),
+                            FlatButton(onPressed: () async {
+                              final time = await showTimePicker(
+                                context: context, 
+                                initialTime: TimeOfDay.now(),
+                              );
+                              final now = new DateTime.now();
+                              final dateTime = new DateTime(now.year, now.month, now.day, time.hour, time.minute);
+                              final next30 = now.add(Duration(minutes: 30));
+                              if (dateTime.isAfter(next30)) {
                                 Navigator.of(context).pop();
-                              }, child: Text("Cancel")),
-                              FlatButton(onPressed: () async {
-                                final time = await showTimePicker(
-                                  context: context, 
-                                  initialTime: TimeOfDay.now(),
+                                await showDialog(  
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('You are not allowed to take a break longer than 30 minute.'),
+                                      actions: [
+                                        FlatButton(onPressed: () {
+                                          Navigator.of(context).pop();
+                                        }, child: Text("OK"))
+                                      ],
+                                    );
+                                  }
                                 );
-                                final now = new DateTime.now();
-                                final dateTime = new DateTime(now.year, now.month, now.day, time.hour, time.minute);
-                                final next30 = now.add(Duration(minutes: 30));
-                                if (dateTime.isAfter(next30)) {
-                                  Navigator.of(context).pop();
-                                  await showDialog(  
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: Text('You are not allowed to take a break longer than 30 minute.'),
-                                        actions: [
-                                          FlatButton(onPressed: () {
-                                            Navigator.of(context).pop();
-                                          }, child: Text("OK"))
-                                        ],
-                                      );
-                                    }
-                                  );
-                                  return;
-                                } else {
-                                  SharedPreferences pref = await SharedPreferences.getInstance();
-                                  String id = pref.getString(Global.TIME);
-                                  pref.setInt(Global.BREAK_TIME, dateTime.toUtc().millisecondsSinceEpoch);
-                                  print("[Pref]: ${pref.getInt(Global.BREAK_TIME)}");
-                                  print("[Minute]: ${dateTime.difference(now).inMinutes}");
-                                  breakTime(id, dateTime.difference(now).inMinutes);
-                                  Global.setBreak();
-                                  // createActivity("Took a break for ${now.difference(dateTime).inHours} minutes.");
-                                  stopTracking();
-                                  workingState.value = 'BREAK';
-                                  Navigator.of(context).pop();
-                                  return;
-                                }
-                              }, child: Text("Sure"))
-                            ],
-                          );
-                        }
-                      );
-                    },
-                    child: Text("Take a break"),
-                  ),
-                ),
-                Container(  
-                  margin: EdgeInsets.all(5),
-                  height: 40,
-                  width: double.infinity,
-                  child: RaisedButton(
-                    onPressed: () async {
-                      await showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text("Are you sure to get off your work?"),
-                            actions: [
-                              FlatButton(onPressed: () {
-                                Navigator.of(context).pop();
-                              }, child: Text("Later")),
-                              FlatButton(onPressed: () async {
-                                stop();
-                                Global.setFinish();
-                                // createActivity('Stopped working at ${DateTime.now().toString()}');
+                                return;
+                              } else {
+                                SharedPreferences pref = await SharedPreferences.getInstance();
+                                String id = pref.getString(Global.TIME);
+                                pref.setInt(Global.BREAK_TIME, dateTime.toUtc().millisecondsSinceEpoch);
+                                print("[Pref]: ${pref.getInt(Global.BREAK_TIME)}");
+                                print("[Minute]: ${dateTime.difference(now).inMinutes}");
+                                breakTime(id, dateTime.difference(now).inMinutes);
+                                Global.setBreak();
+                                // createActivity("Took a break for ${now.difference(dateTime).inHours} minutes.");
                                 stopTracking();
-                                workingState.value = 'OFF';
+                                workingState.value = 'BREAK';
                                 Navigator.of(context).pop();
-                              }, child: Text("Sure"))
-                            ],
-                          );
-                        }
-                      );
-                    },
-                    child: Text("Stop your task"),
-                  ),
+                                return;
+                              }
+                            }, child: Text("Sure"))
+                          ],
+                        );
+                      }
+                    );
+                  },
+                  child: Text("Take a break"),
                 ),
-              ],
-            );
-          }
-        },
-      ),
+              ),
+              Container(  
+                margin: EdgeInsets.all(5),
+                height: 40,
+                width: double.infinity,
+                child: RaisedButton(
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Are you sure to get off your work?"),
+                          actions: [
+                            FlatButton(onPressed: () {
+                              Navigator.of(context).pop();
+                            }, child: Text("Later")),
+                            FlatButton(onPressed: () async {
+                              stop();
+                              Global.setFinish();
+                              // createActivity('Stopped working at ${DateTime.now().toString()}');
+                              stopTracking();
+                              workingState.value = 'OFF';
+                              Navigator.of(context).pop();
+                            }, child: Text("Sure"))
+                          ],
+                        );
+                      }
+                    );
+                  },
+                  child: Text("Stop your task"),
+                ),
+              ),
+            ],
+          );
+        }
+      },
     );
   }
 
