@@ -66,6 +66,7 @@ class SettingsPage extends HookWidget {
                             Navigator.of(context).pop();
                           }, child: Text("Later")),
                           FlatButton(onPressed: () async {
+
                             startTracking();
                             Global.setWorking();
                             // createActivity("Started working on ${DateFormat('yyyy-MM-dd, kk:mm a').format(DateTime.now())}");
@@ -125,6 +126,8 @@ class SettingsPage extends HookWidget {
                                 } else {
                                   SharedPreferences pref = await SharedPreferences.getInstance();
                                   String id = pref.getString(Global.TIME);
+                                  pref.setInt(Global.BREAK_TIME, dateTime.toUtc().millisecondsSinceEpoch);
+                                  print("[Pref]: ${pref.getInt(Global.BREAK_TIME)}");
                                   print("[Minute]: ${dateTime.difference(now).inMinutes}");
                                   breakTime(id, dateTime.difference(now).inMinutes);
                                   Global.setBreak();
@@ -222,6 +225,7 @@ class SettingsPage extends HookWidget {
     pref.setString(Global.TIME, id);
     String url = Uri.encodeFull(Global.URL + '/time/new');
     String body = '{"id": "$id", "employee": "${CurrentUserId.id}", "start_time": ${DateTime.now().toUtc().millisecondsSinceEpoch}}';
+    print(body);
     Response res = await put(url, headers: Global.HEADERS, body: body);
     if (res.statusCode == 201) {
       print('done');
@@ -230,11 +234,35 @@ class SettingsPage extends HookWidget {
     }
   }
 
+  void restart() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String id = pref.getString(Global.TIME);
+    int breakEnd = pref.getInt(Global.BREAK_TIME);
+    int now = DateTime.now().toUtc().millisecondsSinceEpoch;
+    int diff = now - breakEnd;
+    if (diff < 0) {
+      diff = 0;
+    }
+    int mins = (diff ~/ 60000).toInt();
+    print("[Late]: $mins");
+    String url = Uri.encodeFull(Global.URL + '/time/restart');
+    String body = '{"id": "$id", "late": $mins}';
+    Response res = await patch(url, headers: Global.HEADERS, body: body);
+    if (res.statusCode == 204) {
+      print('done');
+    } else {
+      print("$res");
+    }
+    pref.remove(Global.BREAK_TIME);
+  }
+
   void startTracking() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String id = pref.getString(Global.TIME);
     if (id == null) {
       createTime();
+    } else {
+      restart();
     }
     final flag = await AndroidAlarmManager.initialize();
     if (flag) {
