@@ -13,20 +13,20 @@ class ReportDetailPage extends HookWidget {
 
   loadReport() async {
     String url1 = Uri.encodeFull(Global.URL + 'reports/' + id);
-    Response res1 = await get(url1);
+    Response res1 = await get(url1, headers: Global.HEADERS);
     Report report = Report.fromJSON(res1.body);
 
     String url2 = Uri.encodeFull(Global.URL + 'employees/' + report.reporter);
-    Response res2 = await get(url2);
+    Response res2 = await get(url2, headers: Global.HEADERS);
     User user = User.fromJSON(res2.body);
 
     String url3 = Uri.encodeFull(Global.URL + 'tasks/' + report.task);
-    Response res3 = await get(url3);
+    Response res3 = await get(url3, headers: Global.HEADERS);
     Task task = Task.fromJSON(res3.body);
 
     String url4 =
         Uri.encodeFull(Global.URL + 'employees/' + report.confirmerId);
-    Response res4 = await get(url4);
+    Response res4 = await get(url4, headers: Global.HEADERS);
     User confirmer = User.fromJSON(res4.body);
 
     return {
@@ -83,7 +83,7 @@ class ReportDetailPage extends HookWidget {
                   CurrentUserId.id);
               String body = '{"isConfirmed": true}';
               print(body);
-              Response res = await patch(url, body: body);
+              Response res = await patch(url, headers: Global.HEADERS, body: body);
               print('hi');
               print(res.body);
               if (res.statusCode == 204) {
@@ -94,7 +94,7 @@ class ReportDetailPage extends HookWidget {
                     '/change?type=finish');
                 String body =
                     '{"time": ${DateTime.now().millisecondsSinceEpoch}}';
-                Response res = await patch(url, body: body);
+                Response res = await patch(url, headers: Global.HEADERS, body: body);
                 if (res.statusCode == 204) {
                   Navigator.pop(context);
                   Navigator.push(
@@ -110,7 +110,7 @@ class ReportDetailPage extends HookWidget {
 
             deleteReport() async {
               String url = Uri.encodeFull(Global.URL + 'reports/' + id);
-              Response res = await delete(url);
+              Response res = await delete(url, headers: Global.HEADERS);
               if (res.statusCode == 204) {
                 print('done');
               }

@@ -15,7 +15,7 @@ class NotificaitonPage extends StatelessWidget {
           'employees/' +
           CurrentUserId.id +
           '/notifications');
-      Response res = await get(url);
+      Response res = await get(url, headers: Global.HEADERS);
       return Noti.fromJSONArray(res.body);
     }
 

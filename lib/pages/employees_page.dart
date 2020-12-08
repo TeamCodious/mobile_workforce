@@ -8,6 +8,8 @@ import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/state.dart';
 
+import '../global.dart';
+
 class EmployeesPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,13 +19,13 @@ class EmployeesPage extends HookWidget {
     loadManagersAndEmployees() async {
       String url1 = Uri.encodeFull(
           'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=managers');
-      Response res1 = await get(url1);
+      Response res1 = await get(url1, headers: Global.HEADERS);
       List<User> managers = User.fromJSONArray(res1.body)
           .where((m) => m.id != CurrentUserId.id)
           .toList();
 
       String url2 = Uri.encodeFull(Global.URL + 'employees?type=employees');
-      Response res2 = await get(url2);
+      Response res2 = await get(url2, headers: Global.HEADERS);
 
       List<User> employees = User.fromJSONArray(res2.body)
           .where((e) => e.id != CurrentUserId.id)

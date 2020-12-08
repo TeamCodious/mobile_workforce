@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:http/http.dart';
+import '../global.dart';
 import '../models.dart';
 import '../state.dart';
 import './employee_map.dart';
@@ -53,13 +54,13 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
   void _getMarkers() async {
     String url = Uri.encodeFull(
         'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees?type=employees');
-    Response response = await get(url);
+    Response response = await get(url, headers: Global.HEADERS);
     final array = User.fromJSONArray(response.body)
         .where((element) => element.latitude != null)
         .toList();
     String urlTask = Uri.encodeFull(
         'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/${CurrentUserId.id}/tasks?type=owner');
-    Response responseTask = await get(urlTask);
+    Response responseTask = await get(urlTask, headers: Global.HEADERS);
     setState(() {
       markers = Task.fromJSONArray(responseTask.body)
           .map((e) => Marker(
@@ -148,7 +149,7 @@ class _EmployeeMapPageState extends State<EmployeeMapPage> {
   void _getTasks() async {
     String url = Uri.encodeFull(
         'https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/employees/${CurrentUserId.id}/tasks?type=all');
-    Response response = await get(url);
+    Response response = await get(url, headers: Global.HEADERS);
     setState(() {
       tasks = Task.fromJSONArray(response.body);
     });

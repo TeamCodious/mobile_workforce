@@ -15,6 +15,8 @@ import 'package:mobile_workforce/pages/create_report_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:mobile_workforce/components/activity_card.dart';
 
+import '../global.dart';
+
 class TaskDetailPage extends HookWidget {
   final taskId;
   final mapController = Completer<GoogleMapController>();
@@ -25,7 +27,7 @@ class TaskDetailPage extends HookWidget {
   Widget build(BuildContext context) {
     loadTask() async {
       String url = Uri.encodeFull(Global.URL + 'tasks/' + taskId);
-      return get(url);
+      return get(url, headers: Global.HEADERS);
     }
 
     return Scaffold(
@@ -78,13 +80,13 @@ class TaskDetailPage extends HookWidget {
               loadManger() async {
                 String url =
                     Uri.encodeFull(Global.URL + 'employees/' + task.manager);
-                return get(url);
+                return get(url, headers: Global.HEADERS);
               }
 
               loadActivites() async {
                 String url = Uri.encodeFull(
                     Global.URL + 'tasks/' + taskId + '/activities');
-                return get(url);
+                return get(url, headers: Global.HEADERS);
               }
 
               defaultReport() async {
@@ -93,7 +95,7 @@ class TaskDetailPage extends HookWidget {
                     task.adminIds.map((a) => '"' + a + '"').toList().toString();
                 String body =
                     '{"task": "$taskId", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "text": "This task is done", "title": "Task complete confirmation", "confirmedTime": 0}';
-                Response res = await put(url, body: body);
+                Response res = await put(url, headers: Global.HEADERS, body: body);
                 if (res.statusCode == 201) {
                   Navigator.pop(context);
                   print('done');
@@ -105,7 +107,7 @@ class TaskDetailPage extends HookWidget {
                     Global.URL + 'tasks/' + task.id + '/change?type=start');
                 String body =
                     '{"time": ${DateTime.now().millisecondsSinceEpoch}}';
-                Response res = await patch(url, body: body);
+                Response res = await patch(url, headers: Global.HEADERS, body: body);
                 if (res.statusCode == 204) {
                   Navigator.pop(context);
                   Navigator.push(
@@ -232,7 +234,7 @@ class TaskDetailPage extends HookWidget {
                                                   'tasks/' +
                                                   taskId +
                                                   '/employees?type=owners');
-                                          return get(url);
+                                          return get(url, headers: Global.HEADERS);
                                         }
 
                                         return AlertDialog(
@@ -331,7 +333,7 @@ class TaskDetailPage extends HookWidget {
                                                   'tasks/' +
                                                   taskId +
                                                   '/employees?type=assignees');
-                                          return get(url);
+                                          return get(url, headers: Global.HEADERS);
                                         }
 
                                         return AlertDialog(

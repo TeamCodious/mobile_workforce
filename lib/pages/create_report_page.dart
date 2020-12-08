@@ -6,6 +6,8 @@ import 'package:mobile_workforce/global.dart';
 import 'package:mobile_workforce/models.dart';
 import 'package:mobile_workforce/state.dart';
 
+import '../global.dart';
+
 class CreateReportPage extends HookWidget {
   final Task task;
   CreateReportPage({Key key, this.task}) : super(key: key);
@@ -29,7 +31,7 @@ class CreateReportPage extends HookWidget {
           task.adminIds.map((a) => '"' + a + '"').toList().toString();
       String body =
           '{"task": "${task.id}", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "title": "${titleController.text}", "text": "${textController.text}", "confirmedTime" : 0}';
-      Response res = await put(url, body: body);
+      Response res = await put(url, headers: Global.HEADERS, body: body);
       if (res.statusCode == 201) {
         Navigator.pop(context);
         print('done');

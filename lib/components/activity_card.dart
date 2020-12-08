@@ -3,6 +3,8 @@ import 'package:mobile_workforce/global.dart';
 import 'package:http/http.dart';
 import 'package:mobile_workforce/models.dart';
 
+import '../global.dart';
+
 class ActivityCard extends StatelessWidget {
   final title;
   final employeeId;
@@ -21,13 +23,13 @@ class ActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     load() async {
       String url1 = Uri.encodeFull(Global.URL + 'employees/' + employeeId);
-      Response res1 = await get(url1);
+      Response res1 = await get(url1, headers: Global.HEADERS);
       User employee = User.fromJSON(res1.body);
 
       Task task;
       if (taskId != null) {
         String url2 = Uri.encodeFull(Global.URL + 'tasks/' + taskId);
-        Response res2 = await get(url2);
+        Response res2 = await get(url2, headers: Global.HEADERS);
         task = Task.fromJSON(res2.body);
       }
 

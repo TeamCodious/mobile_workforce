@@ -14,8 +14,14 @@ class Global {
   static const USER_ROLE = "com.example.role";
   static const WORKING_STATE = "com.example.workingState";
   static const URL =
-      "https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v1/";
+      "https://tunfjy82s4.execute-api.ap-southeast-1.amazonaws.com/prod_v2/";
   static const NOTI_KEY = "com.example.noti";
+  static const TIME = "com.example.time";
+  static const BREAK_TIME = "com.example.breakTime";
+  static const API_KEY = "AXhBVnpNnUM11WAEsCeN9LCrPrytzk38tkWmo2Oa";
+  static const HEADERS = {
+    "x-api-key": API_KEY
+  };
   static void setWorking() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString(Global.WORKING_STATE, 'ON');

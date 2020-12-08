@@ -9,6 +9,10 @@ import 'package:mobile_workforce/pages/login_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../global.dart';
+import '../global.dart';
+import '../global.dart';
+
 class EmployeeDetailPage extends HookWidget {
   final String id;
   EmployeeDetailPage({Key key, this.id}) : super(key: key);
@@ -16,12 +20,12 @@ class EmployeeDetailPage extends HookWidget {
   loadUser() async {
     String url1 = Uri.encodeFull(Global.URL + 'employees/' + id);
 
-    Response res1 = await get(url1);
+    Response res1 = await get(url1, headers: Global.HEADERS);
     User user = User.fromJSON(res1.body);
 
     String url2 =
         Uri.encodeFull(Global.URL + 'employees/' + id + '/tasks?type=all');
-    Response res2 = await get(url2);
+    Response res2 = await get(url2, headers: Global.HEADERS);
     List<Task> tasks = Task.fromJSONArray(res2.body);
     String ongoingTasks =
         tasks.where((t) => t.taskState == 'Ongoing').length.toString();
@@ -78,7 +82,7 @@ class EmployeeDetailPage extends HookWidget {
                   'employees/' +
                   snapshot.data['user'].id +
                   '/activities');
-              return get(url);
+              return get(url, headers: Global.HEADERS);
             }
 
             return SingleChildScrollView(
