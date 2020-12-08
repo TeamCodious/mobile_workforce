@@ -95,7 +95,8 @@ class TaskDetailPage extends HookWidget {
                     task.adminIds.map((a) => '"' + a + '"').toList().toString();
                 String body =
                     '{"task": "$taskId", "reporter": "${CurrentUserId.id}", "receivers": $formattedString, "text": "This task is done", "title": "Task complete confirmation", "confirmedTime": 0}';
-                Response res = await put(url, headers: Global.HEADERS, body: body);
+                Response res =
+                    await put(url, headers: Global.HEADERS, body: body);
                 if (res.statusCode == 201) {
                   Navigator.pop(context);
                   print('done');
@@ -107,7 +108,8 @@ class TaskDetailPage extends HookWidget {
                     Global.URL + 'tasks/' + task.id + '/change?type=start');
                 String body =
                     '{"time": ${DateTime.now().millisecondsSinceEpoch}}';
-                Response res = await patch(url, headers: Global.HEADERS, body: body);
+                Response res =
+                    await patch(url, headers: Global.HEADERS, body: body);
                 if (res.statusCode == 204) {
                   Navigator.pop(context);
                   Navigator.push(
@@ -234,7 +236,8 @@ class TaskDetailPage extends HookWidget {
                                                   'tasks/' +
                                                   taskId +
                                                   '/employees?type=owners');
-                                          return get(url, headers: Global.HEADERS);
+                                          return get(url,
+                                              headers: Global.HEADERS);
                                         }
 
                                         return AlertDialog(
@@ -276,6 +279,7 @@ class TaskDetailPage extends HookWidget {
                                                     children: admins
                                                         .map(
                                                           (a) => EmployeeCard(
+                                                            id: a.id,
                                                             name: a.id ==
                                                                     CurrentUserId
                                                                         .id
@@ -333,7 +337,8 @@ class TaskDetailPage extends HookWidget {
                                                   'tasks/' +
                                                   taskId +
                                                   '/employees?type=assignees');
-                                          return get(url, headers: Global.HEADERS);
+                                          return get(url,
+                                              headers: Global.HEADERS);
                                         }
 
                                         return AlertDialog(
@@ -377,6 +382,7 @@ class TaskDetailPage extends HookWidget {
                                                               .map(
                                                                 (a) =>
                                                                     EmployeeCard(
+                                                                  id: a.id,
                                                                   name: a.id ==
                                                                           CurrentUserId
                                                                               .id

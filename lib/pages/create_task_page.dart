@@ -484,6 +484,8 @@ class CreateTaskPage extends HookWidget {
                                                               children: users
                                                                   .map((u) =>
                                                                       EmployeeCard(
+                                                                        id: u
+                                                                            .id,
                                                                         name: u
                                                                             .username,
                                                                         role: u
@@ -657,6 +659,8 @@ class CreateTaskPage extends HookWidget {
                                                               children: users
                                                                   .map((u) =>
                                                                       EmployeeCard(
+                                                                        id: u
+                                                                            .id,
                                                                         name: u
                                                                             .username,
                                                                         role: u
