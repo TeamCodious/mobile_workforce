@@ -13,12 +13,6 @@ import 'package:mobile_workforce/pages/coordinate_picker.dart';
 import 'package:mobile_workforce/pages/home_page.dart';
 import 'package:mobile_workforce/state.dart';
 
-import '../global.dart';
-import '../global.dart';
-import '../global.dart';
-import '../global.dart';
-import '../global.dart';
-
 class CreateTaskPage extends HookWidget {
   final mapController = Completer<GoogleMapController>();
 
@@ -127,7 +121,7 @@ class CreateTaskPage extends HookWidget {
       String url = Uri.encodeFull(Global.URL + 'employees');
 
       String body = '{"employees": ${formattedAssigneeString.toString()}}';
-      return post(url,headers: Global.HEADERS, body: body);
+      return post(url, headers: Global.HEADERS, body: body);
     }
 
     useEffect(() {

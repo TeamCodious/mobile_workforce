@@ -9,10 +9,6 @@ import 'package:mobile_workforce/pages/login_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../global.dart';
-import '../global.dart';
-import '../global.dart';
-
 class EmployeeDetailPage extends HookWidget {
   final String id;
   EmployeeDetailPage({Key key, this.id}) : super(key: key);
