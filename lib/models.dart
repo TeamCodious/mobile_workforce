@@ -51,6 +51,45 @@ class Task {
   }
 }
 
+class Time {
+  String id;
+  String employee;
+  int startTime;
+  int stopTime;
+  int totalBreak;
+  int totalLate;
+  int totalTime;
+  int createdAt;
+
+  static Time fromJSON(String jsonString) {
+    final Map<String, dynamic> data = jsonDecode(jsonString);
+    return Time()
+      ..id = data['id']
+      ..employee = data['employee']
+      ..startTime = data['start_time']
+      ..stopTime = data['stop_time'] ?? null
+      ..totalBreak = data['total_break']
+      ..totalLate = data['total_late']
+      ..createdAt = data['createdAt']
+      ..totalTime = data['total_time'];
+  }
+
+  static List<Time> fromJSONArray(String jsonString) {
+    final Iterable<dynamic> data = jsonDecode(jsonString);
+    return data
+        .map((t) => Time()
+          ..id = t['id']
+          ..employee = t['employee']
+          ..startTime = t['start_time']
+          ..stopTime = t['stop_time'] ?? null
+          ..totalBreak = t['total_break']
+          ..totalLate = t['total_late']
+          ..createdAt = t['createdAt']
+          ..totalTime = t['total_time'])
+        .toList();
+  }
+}
+
 class User {
   String id;
   String username;
