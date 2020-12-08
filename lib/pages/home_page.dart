@@ -18,7 +18,6 @@ import 'notificaitons_page.dart';
 // import 'package:geolocator/geolocator.dart';
 // import 'package:http/http.dart';
 import '../state.dart';
-import 'settings_page.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends HookWidget {
@@ -37,35 +36,31 @@ class HomePage extends HookWidget {
     }
 
     _setFalse() async {
-        hasNoti.value = false;
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        pref.setBool(Global.NOTI_KEY, false);
+      hasNoti.value = false;
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.setBool(Global.NOTI_KEY, false);
     }
 
     useEffect(() {
       _getNoti();
-      messaging.configure(
-        onMessage: (Map<String, dynamic> message) async {
-          print("[Info]: Notification is received while app is on foreground.");
-          hasNoti.value = true;
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          pref.setBool(Global.NOTI_KEY, true);
-        },
-        onResume: (message) async {
-          print("[Info]: Notification is received.");
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => NotificaitonPage()));
-        },
-        onLaunch: (message) async {
-          print("[Info]: Notification is received while app is on launch.");
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => NotificaitonPage()));
-        }
-      );
+      messaging.configure(onMessage: (Map<String, dynamic> message) async {
+        print("[Info]: Notification is received while app is on foreground.");
+        hasNoti.value = true;
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.setBool(Global.NOTI_KEY, true);
+      }, onResume: (message) async {
+        print("[Info]: Notification is received.");
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => NotificaitonPage()));
+      }, onLaunch: (message) async {
+        print("[Info]: Notification is received while app is on launch.");
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => NotificaitonPage()));
+      });
       return () {};
     }, []);
 
@@ -95,22 +90,23 @@ class HomePage extends HookWidget {
           ),
         ),
         actions: [
-          Badge( 
-              position: BadgePosition.topEnd(top: 10, end: 10),
-              badgeContent: null,
-              showBadge: hasNoti.value,
-              child: Tooltip(
-                message: 'Notifications',
-                child: ActionButton(
-                  onPressed: () {
-                    _setFalse();
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (BuildContext context) => NotificaitonPage()));
-                  },
-                  icon: Icon(Icons.notifications),
-                ),
+          Badge(
+            position: BadgePosition.topEnd(top: 10, end: 10),
+            badgeContent: null,
+            showBadge: hasNoti.value,
+            child: Tooltip(
+              message: 'Notifications',
+              child: ActionButton(
+                onPressed: () {
+                  _setFalse();
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              NotificaitonPage()));
+                },
+                icon: Icon(Icons.notifications),
+              ),
             ),
           ),
         ],

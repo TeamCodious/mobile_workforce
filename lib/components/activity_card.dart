@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_workforce/global.dart';
-import 'package:http/http.dart';
-import 'package:mobile_workforce/models.dart';
-
-import '../global.dart';
 
 class ActivityCard extends StatelessWidget {
   final title;
