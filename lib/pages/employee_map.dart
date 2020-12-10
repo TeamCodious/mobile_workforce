@@ -6,8 +6,10 @@ import '../global.dart';
 import '../models.dart';
 
 class EmployeeMap extends StatefulWidget {
-  EmployeeMap({Key key, this.id}) : super(key: key);
+  EmployeeMap({Key key, this.id, this.iniLat, this.iniLong}) : super(key: key);
   final String id;
+  final double iniLat;
+  final double iniLong;
   @override
   _EmployeeMapState createState() => _EmployeeMapState();
 }
@@ -82,7 +84,7 @@ class _EmployeeMapState extends State<EmployeeMap> {
           zoomControlsEnabled: false,
           mapType: MapType.normal,
           initialCameraPosition: CameraPosition(
-            target: LatLng(16.8409, 96.1735),
+            target: LatLng(widget.iniLat, widget.iniLong),
             zoom: 15,
           ),
           markers: markers,

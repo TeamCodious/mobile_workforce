@@ -90,8 +90,10 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              EmployeeMap(id: e.id)));
+                          builder: (BuildContext context) => EmployeeMap(
+                              id: e.id,
+                              iniLat: e.latitude,
+                              iniLong: e.longitude)));
                 },
               ))
           .toSet());
