@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -10,11 +8,9 @@ import 'package:mobile_workforce/components/activity_card.dart';
 import 'package:mobile_workforce/pages/login_page.dart';
 import 'package:mobile_workforce/state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
 import '../global.dart';
 import '../state.dart';
 import 'settings_page.dart';
-import 'package:intl/intl.dart';
 import '../components/timeline.dart';
 
 class EmployeeDetailPage extends HookWidget {
@@ -102,6 +98,7 @@ class EmployeeDetailPage extends HookWidget {
                   '/activities');
               return get(url, headers: Global.HEADERS);
             }
+
             return SingleChildScrollView(
               child: Container(
                 margin: EdgeInsets.all(10),
@@ -154,18 +151,17 @@ class EmployeeDetailPage extends HookWidget {
                         ],
                       ),
                     ),
+                    id == CurrentUserId.id ? SettingsPage() : Container(),
                     id == CurrentUserId.id
-                    ? SettingsPage() : Container(),
-                    id == CurrentUserId.id
-                    ? Container(
-                        margin: EdgeInsets.all(5),
-                        width: double.maxFinite,
-                        child: RaisedButton(
-                          onPressed: logout,
-                          child: Text('Logout'),
-                        ),
-                      )
-                    : Container(),
+                        ? Container(
+                            margin: EdgeInsets.all(5),
+                            width: double.maxFinite,
+                            child: RaisedButton(
+                              onPressed: logout,
+                              child: Text('Logout'),
+                            ),
+                          )
+                        : Container(),
                     Container(
                       width: double.maxFinite,
                       child: Card(
@@ -417,10 +413,10 @@ class EmployeeDetailPage extends HookWidget {
                     TimeLine(id: id),
                     // Container(
                     //   width: double.maxFinite,
-                    //   child: Card( 
-                    //       child: Padding(  
+                    //   child: Card(
+                    //       child: Padding(
                     //         padding: EdgeInsets.all(5),
-                    //         child: Column(  
+                    //         child: Column(
                     //         crossAxisAlignment: CrossAxisAlignment.start,
                     //         children: [
                     //           Padding(
@@ -436,7 +432,7 @@ class EmployeeDetailPage extends HookWidget {
                     //           Container(
                     //             padding: EdgeInsets.only(bottom: 15),
                     //             height: 250,
-                    //             child: charts.BarChart(  
+                    //             child: charts.BarChart(
                     //               snapshot.data['seriesList'],
                     //               animate: false,
                     //               barGroupingType: charts.BarGroupingType.stacked,
@@ -484,7 +480,8 @@ class EmployeeDetailPage extends HookWidget {
                                   List<Activity> activities =
                                       Activity.fromJSONArray(
                                           snapshot.data.body);
-                                  activities.sort((a, b) => b.createdTime.compareTo(a.createdTime));
+                                  activities.sort((a, b) =>
+                                      b.createdTime.compareTo(a.createdTime));
                                   return Column(
                                     children: activities
                                         .map((a) => ActivityCard(

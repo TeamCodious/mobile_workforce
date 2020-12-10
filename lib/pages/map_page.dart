@@ -34,13 +34,17 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
   List<User> employees = [];
   List<Task> tasks = [];
   Set<Marker> markers = Set();
+  BitmapDescriptor taskLocationIcon;
   @override
   void initState() {
     super.initState();
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/task_marker.png')
+        .then((value) => taskLocationIcon = value);
     _getMarkers();
     timer = Timer.periodic(Duration(seconds: 10), (timer) {
       print("hello");
-    _getMarkers();
+      _getMarkers();
     });
   }
 
@@ -70,6 +74,7 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
                   e.latitude,
                   e.longitude,
                 ),
+                icon: taskLocationIcon,
               ))
           .toSet();
       print(markers.length);
@@ -107,13 +112,6 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
         target: LatLng(16.8409, 96.1735),
         zoom: 15,
       ),
-      circles: Set<Circle>.of(employees.map((e) => Circle(
-            circleId: CircleId(e.username),
-            center: LatLng(e.latitude, e.longitude),
-            fillColor: Colors.red.withOpacity(0.2),
-            strokeWidth: 0,
-            radius: 100,
-          ))),
       markers: markers,
     ));
   }
@@ -129,9 +127,13 @@ class EmployeeMapPage extends StatefulWidget {
 class _EmployeeMapPageState extends State<EmployeeMapPage> {
   Timer timer;
   List<Task> tasks = [];
+  BitmapDescriptor taskLocationIcon;
   @override
   void initState() {
     super.initState();
+    BitmapDescriptor.fromAssetImage(
+            ImageConfiguration(devicePixelRatio: 2.5), 'assets/task_marker.png')
+        .then((value) => taskLocationIcon = value);
     _getTasks();
     timer = Timer.periodic(Duration(seconds: 10), (timer) {
       print("hello");
@@ -172,6 +174,7 @@ class _EmployeeMapPageState extends State<EmployeeMapPage> {
               e.latitude,
               e.longitude,
             ),
+            icon: taskLocationIcon,
             onTap: () {},
           ))),
     ));

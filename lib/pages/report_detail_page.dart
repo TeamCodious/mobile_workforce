@@ -83,7 +83,8 @@ class ReportDetailPage extends HookWidget {
                   CurrentUserId.id);
               String body = '{"isConfirmed": true}';
               print(body);
-              Response res = await patch(url, headers: Global.HEADERS, body: body);
+              Response res =
+                  await patch(url, headers: Global.HEADERS, body: body);
               print('hi');
               print(res.body);
               if (res.statusCode == 204) {
@@ -94,7 +95,8 @@ class ReportDetailPage extends HookWidget {
                     '/change?type=finish');
                 String body =
                     '{"time": ${DateTime.now().millisecondsSinceEpoch}}';
-                Response res = await patch(url, headers: Global.HEADERS, body: body);
+                Response res =
+                    await patch(url, headers: Global.HEADERS, body: body);
                 if (res.statusCode == 204) {
                   Navigator.pop(context);
                   Navigator.push(
