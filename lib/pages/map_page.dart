@@ -38,16 +38,16 @@ class _ManagerMapPageState extends State<ManagerMapPage> {
   void initState() {
     super.initState();
     _getMarkers();
-    // timer = Timer.periodic(Duration(seconds: 10), (timer) {
-    //   print("hello");
-    // _getMarkers();
-    // });
+    timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      print("hello");
+    _getMarkers();
+    });
   }
 
   @override
   void dispose() {
-    // timer.cancel();
-    // timer = null;
+    timer.cancel();
+    timer = null;
     super.dispose();
   }
 
@@ -133,16 +133,16 @@ class _EmployeeMapPageState extends State<EmployeeMapPage> {
   void initState() {
     super.initState();
     _getTasks();
-    // timer = Timer.periodic(Duration(seconds: 10), (timer) {
-    //   print("hello");
-    //   _getEmployees();
-    // });
+    timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      print("hello");
+      _getTasks();
+    });
   }
 
   @override
   void dispose() {
-    // timer.cancel();
-    // timer = null;
+    timer.cancel();
+    timer = null;
     super.dispose();
   }
 

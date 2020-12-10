@@ -16,6 +16,7 @@ class LoginPage extends HookWidget {
     String _password;
 
     login() async {
+      await FirebaseMessaging().deleteInstanceID();
       String deviceToken = await FirebaseMessaging().getToken();
       print(deviceToken);
       String body =

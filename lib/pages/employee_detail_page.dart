@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,6 +15,7 @@ import '../global.dart';
 import '../state.dart';
 import 'settings_page.dart';
 import 'package:intl/intl.dart';
+import '../components/timeline.dart';
 
 class EmployeeDetailPage extends HookWidget {
   final String id;
@@ -35,16 +38,16 @@ class EmployeeDetailPage extends HookWidget {
     String completedTasks =
         tasks.where((t) => t.taskState == 'Completed').length.toString();
 
-    String url3 = Uri.encodeFull(Global.URL +
-        'employees/' +
-        id +
-        '/times');
-    Response res3 = await get(url3, headers: Global.HEADERS);
-    List<Time> times = Time.fromJSONArray(res3.body);
-    times.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    charts.Series<dynamic, String> totalTime = new charts.Series<dynamic, String>(id: 'total_time', data: times, domainFn: (time, _) => '${DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(time.createdAt))}', measureFn: (time, _) => time.totalTime);
-    charts.Series<dynamic, String> totalBreak = new charts.Series<dynamic, String>(id: 'total_break', data: times, domainFn: (time, _) => '${DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(time.createdAt))}', measureFn: (time, _) => time.totalBreak);
-    List<charts.Series<dynamic, String>> seriesList = [totalBreak, totalTime];
+    // String url3 = Uri.encodeFull(Global.URL +
+    //     'employees/' +
+    //     id +
+    //     '/times');
+    // Response res3 = await get(url3, headers: Global.HEADERS);
+    // List<Time> times = Time.fromJSONArray(res3.body);
+    // times.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    // charts.Series<dynamic, String> totalTime = new charts.Series<dynamic, String>(id: 'total_time', data: times, domainFn: (time, _) => '${DateFormat('d').format(DateTime.fromMillisecondsSinceEpoch(time.createdAt))}', measureFn: (time, _) => time.totalTime);
+    // charts.Series<dynamic, String> totalBreak = new charts.Series<dynamic, String>(id: 'total_break', data: times, domainFn: (time, _) => '${DateFormat('d').format(DateTime.fromMillisecondsSinceEpoch(time.createdAt))}', measureFn: (time, _) => time.totalBreak);
+    // List<charts.Series<dynamic, String>> seriesList = [totalBreak, totalTime];
 
     Map<String, dynamic> data = {
       'user': user,
@@ -52,8 +55,8 @@ class EmployeeDetailPage extends HookWidget {
       'plannedTasks': plannedTasks,
       'completedTasks': completedTasks,
       'tasks': tasks.length.toString(),
-      'times': times,
-      'seriesList': seriesList,
+      // 'times': times,
+      // 'seriesList': seriesList,
     };
     return data;
   }
@@ -383,66 +386,67 @@ class EmployeeDetailPage extends HookWidget {
                                   ],
                                 ),
                               ),
-                              Container(
-                                margin: EdgeInsets.only(bottom: 10),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Total work hours',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    Text(
-                                      '230',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // Container(
+                              //   margin: EdgeInsets.only(bottom: 10),
+                              //   child: Row(
+                              //     mainAxisAlignment:
+                              //         MainAxisAlignment.spaceBetween,
+                              //     children: [
+                              //       Text(
+                              //         'Total work hours',
+                              //         style: TextStyle(
+                              //           fontWeight: FontWeight.bold,
+                              //           fontSize: 15,
+                              //         ),
+                              //       ),
+                              //       Text(
+                              //         '230',
+                              //         style: TextStyle(
+                              //           fontWeight: FontWeight.bold,
+                              //           fontSize: 15,
+                              //         ),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    Container(
-                      width: double.maxFinite,
-                      child: Card( 
-                          child: Padding(  
-                            padding: EdgeInsets.all(5),
-                            child: Column(  
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.symmetric(vertical: 15),
-                                child: Text(
-                                  'Timeline',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.only(bottom: 15),
-                                height: 250,
-                                child: charts.BarChart(  
-                                  snapshot.data['seriesList'],
-                                  animate: false,
-                                  barGroupingType: charts.BarGroupingType.stacked,
-                                ),
-                              )
-                            ],
-                          ),
-                          )
-                        ),
-                    ),
+                    TimeLine(id: id),
+                    // Container(
+                    //   width: double.maxFinite,
+                    //   child: Card( 
+                    //       child: Padding(  
+                    //         padding: EdgeInsets.all(5),
+                    //         child: Column(  
+                    //         crossAxisAlignment: CrossAxisAlignment.start,
+                    //         children: [
+                    //           Padding(
+                    //             padding: EdgeInsets.symmetric(vertical: 15),
+                    //             child: Text(
+                    //               'Timeline',
+                    //               style: TextStyle(
+                    //                 fontSize: 20,
+                    //                 fontWeight: FontWeight.bold,
+                    //               ),
+                    //             ),
+                    //           ),
+                    //           Container(
+                    //             padding: EdgeInsets.only(bottom: 15),
+                    //             height: 250,
+                    //             child: charts.BarChart(  
+                    //               snapshot.data['seriesList'],
+                    //               animate: false,
+                    //               barGroupingType: charts.BarGroupingType.stacked,
+                    //             ),
+                    //           )
+                    //         ],
+                    //       ),
+                    //       )
+                    //     ),
+                    // ),
                     Container(
                       margin: EdgeInsets.only(bottom: 15),
                       child: Card(
@@ -480,6 +484,7 @@ class EmployeeDetailPage extends HookWidget {
                                   List<Activity> activities =
                                       Activity.fromJSONArray(
                                           snapshot.data.body);
+                                  activities.sort((a, b) => b.createdTime.compareTo(a.createdTime));
                                   return Column(
                                     children: activities
                                         .map((a) => ActivityCard(

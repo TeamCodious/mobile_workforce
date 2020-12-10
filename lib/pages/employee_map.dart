@@ -20,15 +20,15 @@ class _EmployeeMapState extends State<EmployeeMap> {
   void initState() {
     super.initState();
     _getMarkers();
-    // timer = Timer.periodic(Duration(seconds: 10), (timer) {
-    //   print("hello");
-    //   _getEmployees();
-    // });
+    timer = Timer.periodic(Duration(seconds: 10), (timer) {
+      print("hello");
+      _getMarkers();
+    });
   }
   @override
   void dispose() {
-    // timer.cancel();
-    // timer = null;
+    timer.cancel();
+    timer = null;
     super.dispose();
   }
   void _getMarkers() async {

@@ -298,24 +298,24 @@ class SettingsPage extends HookWidget {
       await SQLite.insertPosition(position);
     }
     //debug
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        new FlutterLocalNotificationsPlugin();
-    var initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    //     new FlutterLocalNotificationsPlugin();
+    // var initializationSettingsAndroid =
+    //     AndroidInitializationSettings('@mipmap/ic_launcher');
+    // var initializationSettings =
+    //     InitializationSettings(android: initializationSettingsAndroid);
+    // flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'location_update',
-        'Location Updates',
-        'You will receive location updates here',
-        importance: Importance.max,
-        priority: Priority.high);
-    var platformChannelSpecifics =
-        new NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, 'PUT success $result',
-        "${position.longitude} ${position.latitude}", platformChannelSpecifics);
+    // var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+    //     'location_update',
+    //     'Location Updates',
+    //     'You will receive location updates here',
+    //     importance: Importance.max,
+    //     priority: Priority.high);
+    // var platformChannelSpecifics =
+    //     new NotificationDetails(android: androidPlatformChannelSpecifics);
+    // await flutterLocalNotificationsPlugin.show(0, 'PUT success $result',
+    //     "${position.longitude} ${position.latitude}", platformChannelSpecifics);
   }
 
   static Future<void> save(Position position) async {

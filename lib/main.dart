@@ -73,6 +73,7 @@ class MainFrame extends HookWidget {
         String url = Uri.encodeFull(Global.URL + 'locations/new');
         String body =
             '{"time": ${location.time}, "latitude": ${location.latitude}, "longitude": ${location.longitude}, "employee": "$userID"}';
+        print(body);
         try {
           Response response = await put(url, headers: Global.HEADERS, body: body);
           if (response.statusCode == 201) {
